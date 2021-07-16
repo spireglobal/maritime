@@ -1,0 +1,64 @@
+query {
+            vessels(
+                 areaOfInterest: {
+                      type: "Polygon"
+                      coordinates: [
+                        [
+                          [-5.9765625, 51.31688050404585]
+                          [12.12890625, 51.31688050404585]
+                          [12.12890625, 61.39671887310411]
+                          [-5.9765625, 61.39671887310411]
+                          [-5.9765625, 51.31688050404585]
+                        ]
+                      ]
+                    }
+            ){
+                metadata{
+                    cursor
+                    correlationId
+                    after
+                    hasMore
+                }
+                vessels{
+                    vessel{
+                        name
+                        flag
+                        class
+                        callsign
+                        timestamp
+                        mmsi
+                        imo
+                        shipType    
+                        dimensions{
+                            a
+                            b
+                            c
+                            d
+                            length
+                            width
+                        }
+        
+                    }
+                    voyage{
+                        eta
+                        draught
+                        timestamp
+                        destination            
+                    }
+                    positionUpdate{
+                        accuracy
+                        timestamp
+                        latitude
+                        longitude
+                        collectionType
+                        heading
+                        speed
+                        rot
+                        maneuver
+                        course
+                        navigationalStatus
+                    }
+                }
+                
+            }        
+    }

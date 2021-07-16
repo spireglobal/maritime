@@ -1,0 +1,12 @@
+endpoint: 'https://<SOME_ULR>'
+token: '<TOKEN>'
+name_of_gql_query_file: 'sample_1.txt'
+name_of_raw_output_file: 'raw.log'   # if set to "" no file will be produced
+name_of_csv_file: 'parsed.csv' # if set to "" no file will be produced
+items_per_page: 100 # number of items returned per page, max is 1000
+pages_to_process: 5  # if 0, then all pages.  Otherwise this is used to limit the pages processed
+
+
+#endpoint: 'https://<PRODUCTION_ENDPOINT>'
+#token: '<YOUR TOKEN HERE>'
+
