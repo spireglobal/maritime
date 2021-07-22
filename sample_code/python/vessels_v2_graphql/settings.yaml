@@ -1,4 +1,4 @@
-endpoint: 'https://<SOME_ULR>'
+endpoint: 'https://<SOME_URL>'
 token: '<TOKEN>'
 name_of_gql_query_file: 'sample_1.txt'
 name_of_raw_output_file: 'raw.log'   # if set to "" no file will be produced
