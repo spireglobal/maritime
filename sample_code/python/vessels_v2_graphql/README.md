@@ -28,3 +28,6 @@ Prior to running the program, please review each of the sample files
 |sample_1.txt           |Will return all Vessel, Voyage and PositionUpdates available for the global fleet.  Every available field is requested|
 |sample_2.txt           |Same as above, but specifying a set of mmsi|
 |sample_3.txt           |All vessels in the Indian Ocean|
+
+# Logging
+The program creates a log file for debugging purposes named ```demo_client.log```
