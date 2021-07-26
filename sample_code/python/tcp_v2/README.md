@@ -15,6 +15,13 @@ Connects to the Spire TCP stream and optionally outputs:
 
 ## SETUP
 ### Install required libraries
+#### Edit the requirements.txt if needed
+These two libraries are not required if you do not plan to save data to BigQuery:
+* google-cloud-bigquery
+* google-api-core
+
+Comment them out in the requirements.txt file if you desire
+
 1. Set up a python virtual environment as you desire:
 * [venv](https://docs.python.org/3/library/venv.html)
 * [pipenv](https://pipenv.pypa.io/en/latest/) 
