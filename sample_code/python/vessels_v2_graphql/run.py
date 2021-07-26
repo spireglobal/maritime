@@ -74,7 +74,6 @@ def page(response):
     cursor: str = metadata['cursor']
     hasMore: bool = metadata['hasMore']
     client = get_client()
-    query = read_query_file()
     after = metadata['after']
     pages_processed = 0
     # got one page

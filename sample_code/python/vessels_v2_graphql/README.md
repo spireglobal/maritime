@@ -1,3 +1,6 @@
+# Spire customer / developer resource
+The code is intended for demonstration purposes for Spire customers and is in no way intended for production use
+
 # Setup
 ## Python Environment
 1. Use a virtual environment, pipenv or other tool and enable the python environment
