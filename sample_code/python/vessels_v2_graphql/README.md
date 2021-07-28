@@ -51,7 +51,7 @@ pageInfo{
 
 ### Create a new query
 1. Create a text file (file with .txt extension)
-2. Write a query.  Use the samples as a guide.  Also see the important note regarding ```metadata``` above
+2. Write a query.  Use the samples as a guide.  Also see the important note regarding ```pageInfo``` above
 3. Edit the ```settings.yaml``` file and add the name of the file you created after ```name_of_gql_query_file```
 
 For example:
@@ -85,6 +85,6 @@ The program creates a log file for debugging purposes named ```demo_client.log``
 
 # Troubleshooting
 * Read again the section titled **Important**
-* Errors will occur if the ```metadata``` section is not included
+* Errors will occur if the ```pageInfo``` section is not included
 * Errors will occur if the query text file contains comments (#) or any text that does not conform to GraphQL query syntax
 * Errors will occur if the query text file contains ```_limit```, ```_after```, ```_cursor```, or ```_correlationId```
