@@ -8,7 +8,6 @@ class Paging(object):
     def __init__(self, response):
         self._response = response
 
-
     def get_paging_input_string(self, first=1000, after=''):
         return f"""
         first: {first}
@@ -51,20 +50,11 @@ class Paging(object):
             # there is more, so page
             endCursor, hasNextPage = self._get_pageInfo_elements()
             insert_text = f'after: "{endCursor}" '
-            
+
             query = helpers.insert_into_query_header(query=query, insert_text=insert_text)
-            try: 
+            try:
                 self._response = client.execute(gql(query))
             except BaseException as e:
                 logger.error(e)
                 self._response = None
             return self._response, hasNextPage
-
-
-
-
-
-
-
-
-

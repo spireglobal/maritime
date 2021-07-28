@@ -1,6 +1,5 @@
 from loguru import logger
 import yaml
-from nested_lookup import nested_lookup as nl
 from datetime import datetime
 from gql import Client
 from gql.transport.requests import RequestsHTTPTransport
@@ -85,16 +84,14 @@ def get_vessels_v2_members():
     )
 
 
-def transform_response_for_loading(response, schema, test_name='', test_execute_start_time=None):
 
+def transform_response_for_loading(response, schema, test_name='', test_execute_start_time=None):
 
     v2_schema = [i[0] for i in schema]
     if not test_execute_start_time:
         test_execute_start_time = datetime.utcnow()
+
     nodes: list = response['vessels']['nodes']
-    positionUpdates: list = nl('positionUpdate', response)
-    voyages: list = nl('voyage', response)
-    vessels: list = nl('vessel', response)
     # flatten the dictionaries and add to flats list
     flats: list = list()
     node: dict
@@ -107,43 +104,59 @@ def transform_response_for_loading(response, schema, test_name='', test_execute_
         flat['test_name'] = test_name
         flat["node_ingestionTimestamp"] = node["ingestionTimestamp"]
 
-        for vessel in vessels:
-            for k, v in vessel.items():
+        # vessel in node
+        vessel: dict = node['vessel']
+        for k, v in vessel.items():
+            if k == "ingestionTimestamp":
+                flat["vessel_ingestionTimestamp"] = v
+            elif k == 'timestamp':
+                flat['vessel_timestamp'] = v
+            elif k == 'dimensions':
+                dimensions: dict = v
+                for key, value in dimensions.items():
+                    flat[k] = value
+            else:
+                if not k == 'dimensions':
+                    flat[k] = v
+
+        # positionUpdate in node
+        positionUpdate: dict = dict()
+        try:
+            positionUpdate: dict = node['positionUpdate']
+        except BaseException as e:
+            logger.error(e)
+            logger.error("Could be there is no positionUpdate")
+
+        if positionUpdate:
+            for k, v in positionUpdate.items():
                 if k == "ingestionTimestamp":
-                    flat['vessel_ingestionTimestamp'] = v
+                    flat["position_ingestionTimestamp"] = v
                 elif k == 'timestamp':
-                    flat['vessel_timestamp'] = v
-                elif k == "dimensions":
-                    flat['a'] = vessel['dimensions']['a']
-                    flat['b'] = vessel['dimensions']['b']
-                    flat['c'] = vessel['dimensions']['c']
-                    flat['d'] = vessel['dimensions']['d']
-                    flat['width'] = vessel['dimensions']['width']
-                    flat['length'] = vessel['dimensions']['length']
+                    flat['position_timestamp'] = v
                 else:
                     flat[k] = v
 
-        for positionUpdate in positionUpdates:
-            if positionUpdate:
-                for k, v in positionUpdate.items():
-                    if k == "ingestionTimestamp":
-                        flat["position_ingestionTimestamp"] = v
-                    elif k == 'timestamp':
-                        flat['position_timestamp'] = v
-                    else:
-                        flat[k] = v
-        for voyage in voyages:
-            if voyage:
-                for k, v in voyage.items():
-                    if k == "ingestionTimestamp":
-                        flat['voyage_ingestionTimestamp'] = v
-                    elif k == 'timestamp':
-                        flat['voyage_timestamp'] = v
-                    else:
-                        flat[k] = v
+        # voyage in node
+        voyage: dict = dict()
+        try:
+            voyage = node['voyage']
+        except BaseException as e:
+            logger.error(e)
+            logger.error("Could be there is no voyage")
+        if voyage:
+            for k, v in voyage.items():
+                if k == "ingestionTimestamp":
+                    flat['voyage_ingestionTimestamp'] = v
+                elif k == 'timestamp':
+                    flat['voyage_timestamp'] = v
+                else:
+                    flat[k] = v
+        try:
+            del flat['dimensions']
+        except KeyError:
+            pass
         flats.append(flat)
     return flats
-
 
 
 def get_settings():
@@ -172,5 +185,4 @@ def insert_into_query_header(query, insert_text=''):
     else:
         return query
     return new_query
-
 
