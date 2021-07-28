@@ -14,7 +14,7 @@ class Paging(object):
         after: "{after}"
         """
 
-    def _get_pageInfo_elements(self):
+    def get_pageInfo_elements(self):
         """
         :returns: endCursor, hasNext
         :type endCursor: str
@@ -31,7 +31,7 @@ class Paging(object):
 
     def _should_stop_paging(self):
         # pageInfo.hasNextPage: false and pageInfo.endCursor: null
-        endCursor, hasNextPage = self._get_pageInfo_elements()
+        endCursor, hasNextPage = self.get_pageInfo_elements()
         if not endCursor or not hasNextPage:
             return True
         return False
@@ -48,7 +48,7 @@ class Paging(object):
             return self._response
         else:
             # there is more, so page
-            endCursor, hasNextPage = self._get_pageInfo_elements()
+            endCursor, hasNextPage = self.get_pageInfo_elements()
             insert_text = f'after: "{endCursor}" '
 
             query = helpers.insert_into_query_header(query=query, insert_text=insert_text)

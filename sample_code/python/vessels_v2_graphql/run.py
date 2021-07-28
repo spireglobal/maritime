@@ -88,7 +88,7 @@ def run():
         return
     response: dict = dict()
     try:
-        response = client.execute(gql(query))
+        response = client.execute(query)
     except BaseException as e:
         logger.error(e)
         raise
