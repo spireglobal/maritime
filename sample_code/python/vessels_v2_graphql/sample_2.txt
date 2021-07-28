@@ -1,51 +1,51 @@
 query {
-            vessels(mmsi: [235108346, 413790326,  241229000]){
-                metadata{
-                    cursor
-                    correlationId
-                    after
-                    hasMore
-                }
-                vessels{
-                    vessel{
-                        name
-                        flag
-                        class
-                        callsign
-                        timestamp
-                        mmsi
-                        imo
-                        shipType    
-                        dimensions{
-                            a
-                            b
-                            c
-                            d
-                            length
-                            width
-                        }
-        
-                    }
-                    voyage{
-                        eta
-                        draught
-                        timestamp
-                        destination            
-                    }
-                    positionUpdate{
-                        accuracy
-                        timestamp
-                        latitude
-                        longitude
-                        collectionType
-                        heading
-                        speed
-                        rot
-                        maneuver
-                        course
-                        navigationalStatus
-                    }
-                }
-                
-            }        
+  vessels(mmsi: [235108346, 413790326, 241229000], first: 1000) {
+    pageInfo {
+      hasNextPage
+      correlationId
+      endCursor
     }
+    nodes {
+      ingestionTimestamp
+      vessel {
+        flag
+        name
+        class
+        callsign
+        timestamp
+        ingestionTimestamp
+        imo
+        mmsi
+        shipType
+        dimensions {
+          a
+          b
+          c
+          d
+          width
+          length
+        }
+      }
+      positionUpdate {
+        accuracy
+        heading
+        latitude
+        longitude
+        collectionType
+        maneuver
+        timestamp
+        ingestionTimestamp
+        navigationalStatus
+        rot
+        speed
+      }
+      voyage {
+        eta
+        draught
+        destination
+        ingestionTimestamp
+        timestamp
+      }
+    }
+  }
+}

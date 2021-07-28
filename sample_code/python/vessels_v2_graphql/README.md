@@ -18,7 +18,6 @@ Edit the settings.yaml file
 |name_of_gql_query_file              |Name of file containing query to execute|
 |name_of_raw_output_file             |Name of raw output log. If blank, no log is produced|
 |name_of_csv_file                    |Name of csv file. If blank, no file is produced|
-|items_per_page                      |Number of objects to return per page.  Max 1000|
 |pages_to_process                    |Max number of pages to process.  A helpful setting for debugging.  If set to 0, all pages are processed|
 
 **Note:**
@@ -26,30 +25,22 @@ Edit the settings.yaml file
 
 ## Queries
 ### Important
-* As a demo, this client **requires** each query to include a section to request ```metadata```.
+* As a demo, this client **requires** each query to include a section to request ```pageInfo```.
 * Every query must contain the following:
 
 ```json
-{
-  metadata{
-  cursor
-  correlationId
-  after
-  hasMore
-  }
+pageInfo{
+  endCursor: String
+  hasNextPage: Boolean!
 }
 ```
 
 * For context, consult the sample queries in the files discussed below
 * Do not place any comments or any text that does not represent a query in the query text file you create
-* Do not add any of the following input parameters to your query:
-    * ```_limit```
-    * ```_after```
-    * ```_cursor```
-    * ```_correlationId```
-
-The above input parameters are added automatically by the program
-
+* Do not add any of the following input parameters to your query.  These will be inserted as part of the paging routine:
+  * first
+  * after
+  
 ### Samples
 
 |File                   |Purpose                                |

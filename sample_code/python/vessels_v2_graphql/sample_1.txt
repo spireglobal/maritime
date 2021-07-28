@@ -1,51 +1,53 @@
 query {
-            vessels{
-                metadata{
-                    cursor
-                    correlationId
-                    after
-                    hasMore
-                }
-                vessels{
-                    vessel{
-                        name
+                  vessels(
+                    first: 1000
+                  ) {
+                    pageInfo{
+                      hasNextPage
+                      correlationId
+                      endCursor
+                    }
+                    nodes {
+                      ingestionTimestamp
+                      vessel {
                         flag
+                        name
                         class
                         callsign
                         timestamp
-                        mmsi
+                        ingestionTimestamp
                         imo
-                        shipType    
-                        dimensions{
-                            a
-                            b
-                            c
-                            d
-                            length
-                            width
+                        mmsi
+                        shipType
+                        dimensions {
+                          a
+                          b
+                          c
+                          d
+                          width
+                          length
                         }
-        
-                    }
-                    voyage{
-                        eta
-                        draught
-                        timestamp
-                        destination            
-                    }
-                    positionUpdate{
+                      }
+                      positionUpdate {
                         accuracy
-                        timestamp
+                        heading
                         latitude
                         longitude
                         collectionType
-                        heading
-                        speed
-                        rot
                         maneuver
-                        course
+                        timestamp
+                        ingestionTimestamp
                         navigationalStatus
+                        rot
+                        speed
+                      }
+                      voyage {
+                        eta
+                        draught
+                        destination
+                        ingestionTimestamp
+                        timestamp
+                      }
                     }
+                  }
                 }
-                
-            }        
-    }
