@@ -24,7 +24,7 @@ Edit the settings.yaml file
 * Files are all assumed to be in the same directory as the program
 
 ## Queries
-### Important Note - pageInfo
+### Important
 * As a demo, this client **requires** each query to include a section to request ```pageInfo```.
 * Every query must contain the following:
 
@@ -85,6 +85,6 @@ The program creates a log file for debugging purposes named ```demo_client.log``
 
 # Troubleshooting
 * Read again the section titled **Important**
-* Errors will occur if the ```metadata``` section is not included
+* Errors will occur if the ```pageInfo``` section is not included
 * Errors will occur if the query text file contains comments (#) or any text that does not conform to GraphQL query syntax
 * Errors will occur if the query text file contains ```_limit```, ```_after```, ```_cursor```, or ```_correlationId```
