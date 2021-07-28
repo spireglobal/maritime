@@ -24,7 +24,7 @@ Edit the settings.yaml file
 * Files are all assumed to be in the same directory as the program
 
 ## Queries
-### Important
+### Important Note - pageInfo
 * As a demo, this client **requires** each query to include a section to request ```pageInfo```.
 * Every query must contain the following:
 
@@ -51,7 +51,7 @@ pageInfo{
 
 ### Create a new query
 1. Create a text file (file with .txt extension)
-2. Write a query.  Use the samples as a guide.  Also see the important note regarding ```metadata``` above
+2. Write a query.  Use the samples as a guide.  Also see the important note regarding ```pageInfo``` above
 3. Edit the ```settings.yaml``` file and add the name of the file you created after ```name_of_gql_query_file```
 
 For example:
