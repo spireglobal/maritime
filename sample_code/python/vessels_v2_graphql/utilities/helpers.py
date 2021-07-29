@@ -1,10 +1,12 @@
-from loguru import logger
-import yaml
+import csv
+import os
 from datetime import datetime
+
+import yaml
 from gql import Client
 from gql.transport.requests import RequestsHTTPTransport
+from loguru import logger
 from requests import exceptions
-
 
 
 def get_gql_client():
@@ -44,9 +46,9 @@ def get_vessels_v2_members():
         ('row_insert_timestamp', "TIMESTAMP"),
         ('test_execute_start_time', "STRING"),
         ('test_name', "STRING"),
-        ('node_ingestionTimestamp', "STRING"),
-        ('vessel_ingestionTimestamp', "STRING"),
-        ('vessel_timestamp', "STRING"),
+        ('nodes_ingestionTimestamp', "STRING"),
+        ('staticInfo_ingestionTimestamp', "STRING"),
+        ('staticInfo_timestamp', "STRING"),
         ('mmsi', "string"),
         ('imo', 'string'),
         ('name', 'string'),
@@ -54,14 +56,14 @@ def get_vessels_v2_members():
         ('shipType', 'string'),
         ('class', 'string'),
         ('flag', 'string'),
-        ('length', 'string'),
-        ('width', 'string'),
-        ('a', 'string'),
-        ('b', 'string'),
-        ('c', 'string'),
-        ('d', 'string'),
-        ('position_ingestionTimestamp', "STRING"),
-        ('position_timestamp', "STRING"),
+        ('dimensions_length', 'string'),
+        ('dimensions_width', 'string'),
+        ('antennaDistances_a', 'string'),
+        ('antennaDistances_b', 'string'),
+        ('antennaDistances_c', 'string'),
+        ('antennaDistances_d', 'string'),
+        ('lastPositionUpdate_ingestionTimestamp', "STRING"),
+        ('lastPositionUpdate_timestamp', "STRING"),
         ('latitude', 'string'),
         ('longitude', 'string'),
         ('heading', 'string'),
@@ -72,22 +74,20 @@ def get_vessels_v2_members():
         ('course', 'string'),
         ('navigationalStatus', 'string'),
         ('collectionType', 'string'),
-        ('voyage_ingestionTimestamp', "STRING"),
-        ('voyage_timestamp', "STRING"),
+        ('currentVoyage_ingestionTimestamp', "STRING"),
+        ('currentVoyage_currentVoyage_timestamp', "STRING"),
         ('draught', 'string'),
-        ('eta', 'string'),
-        ('destination', 'string'),
-        # ('matched_port_name', 'string'),
-        # ('matched_port_unlocode', 'string'),
-        # ('matched_port_lat', 'string'),
-        # ('matched_port_long', 'string'),
+        ('reportedETA', 'string'),
+        ('reportedDestination', 'string'),
+        # ('matchedPort_name', 'string'),
+        # ('matchedPort_unlocode', 'string'),
+        # ('matchedPort_lat', 'string'),
+        # ('matchedPort_long', 'string'),
     )
-
 
 
 def transform_response_for_loading(response, schema, test_name='', test_execute_start_time=None):
 
-    v2_schema = [i[0] for i in schema]
     if not test_execute_start_time:
         test_execute_start_time = datetime.utcnow()
 
@@ -97,6 +97,7 @@ def transform_response_for_loading(response, schema, test_name='', test_execute_
     node: dict
     for node in nodes:
         flat: dict = dict()
+        v2_schema = [i[0] for i in schema]
         for key in v2_schema:
             flat.setdefault(key, '')
         flat['row_insert_timestamp'] = "AUTO"
@@ -105,54 +106,69 @@ def transform_response_for_loading(response, schema, test_name='', test_execute_
         flat["node_ingestionTimestamp"] = node["ingestionTimestamp"]
 
         # vessel in node
-        vessel: dict = node['vessel']
+        vessel: dict = node['staticInfo']
         for k, v in vessel.items():
             if k == "ingestionTimestamp":
-                flat["vessel_ingestionTimestamp"] = v
+                flat["staticInfo_ingestionTimestamp"] = v
             elif k == 'timestamp':
-                flat['vessel_timestamp'] = v
+                flat['staticInfo_timestamp'] = v
             elif k == 'dimensions':
                 dimensions: dict = v
                 for key, value in dimensions.items():
                     flat[k] = value
+            elif k == 'antennaDistances':
+                antennaDistances: dict = v
+                for key, value in antennaDistances.items():
+                    flat[k] = value
+
             else:
-                if not k == 'dimensions':
+                if not k == 'dimensions' or not k == 'antennaDistances':
+                    if not v:
+                        v = ''
                     flat[k] = v
 
-        # positionUpdate in node
-        positionUpdate: dict = dict()
+        # lastPositionUpdate in node
+        lastPositionUpdate: dict = dict()
         try:
-            positionUpdate: dict = node['positionUpdate']
+            lastPositionUpdate: dict = node['lastPositionUpdate']
         except BaseException as e:
             logger.error(e)
-            logger.error("Could be there is no positionUpdate")
+            logger.error("Could be there is no lastPositionUpdate")
 
-        if positionUpdate:
-            for k, v in positionUpdate.items():
+        if lastPositionUpdate:
+            for k, v in lastPositionUpdate.items():
                 if k == "ingestionTimestamp":
-                    flat["position_ingestionTimestamp"] = v
+                    flat["lastPositionUpdate_ingestionTimestamp"] = v
                 elif k == 'timestamp':
-                    flat['position_timestamp'] = v
+                    flat['lastPositionUpdate_timestamp'] = v
                 else:
+                    if not v:
+                        v = ''
                     flat[k] = v
 
-        # voyage in node
-        voyage: dict = dict()
+        # currentVoyage in node
+        currentVoyage: dict = dict()
         try:
-            voyage = node['voyage']
+            currentVoyage = node['currentVoyage']
         except BaseException as e:
             logger.error(e)
-            logger.error("Could be there is no voyage")
-        if voyage:
-            for k, v in voyage.items():
+            logger.error("Could be there is no currentVoyage")
+        if currentVoyage:
+            for k, v in currentVoyage.items():
                 if k == "ingestionTimestamp":
-                    flat['voyage_ingestionTimestamp'] = v
+                    flat['currentVoyage_ingestionTimestamp'] = v
                 elif k == 'timestamp':
-                    flat['voyage_timestamp'] = v
+                    flat['currentVoyage_timestamp'] = v
                 else:
+                    if not v:
+                        v = ''
                     flat[k] = v
         try:
+            # in case somehow these got into the dictionary
             del flat['dimensions']
+            del flat['antennaDistances']
+            del flat['lastPositionUpdate']
+            del flat['currentVoyage']
         except KeyError:
             pass
         flats.append(flat)
@@ -186,3 +202,31 @@ def insert_into_query_header(query, insert_text=''):
         return query
     return new_query
 
+
+def get_csv_list_from_dir():
+    files = os.listdir(get_settings()['csv_directory'])
+    csvs: list = [file for file in files if '.csv' in file]
+    return csvs
+
+
+def write_data_to_csv(data: dict, csv_columns):
+    fname: str = f'{datetime.utcnow()}.csv'
+    fpath: str = get_settings()['csv_directory']
+    _write_directory(fpath)
+    full = fpath + '/' + fname
+
+    try:
+        with open(full, 'a+') as f:
+            writer = csv.DictWriter(f, fieldnames=csv_columns)
+            writer.writeheader()
+            writer.writerow(data)
+    except FileNotFoundError as e:
+        logger.error(e)
+        raise
+
+
+def _write_directory(dirname):
+    try:
+        os.mkdir(dirname)
+    except FileExistsError:
+        pass
