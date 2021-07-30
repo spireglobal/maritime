@@ -203,17 +203,16 @@ def insert_into_query_header(query, insert_text=''):
     return new_query
 
 
-def get_csv_list_from_dir():
-    files = os.listdir(get_settings()['csv_directory'])
+def get_csv_list_from_dir(directory):
+    files = os.listdir(directory)
     csvs: list = [file for file in files if '.csv' in file]
     return csvs
 
 
-def write_data_to_csv(data: dict, csv_columns):
+def write_data_to_csv(data: dict, csv_columns, directory):
     fname: str = f'{datetime.utcnow()}.csv'
-    fpath: str = get_settings()['csv_directory']
-    _write_directory(fpath)
-    full = fpath + '/' + fname
+    write_directory(directory)
+    full = directory + '/' + fname
 
     try:
         with open(full, 'a+') as f:
@@ -225,7 +224,7 @@ def write_data_to_csv(data: dict, csv_columns):
         raise
 
 
-def _write_directory(dirname):
+def write_directory(dirname):
     try:
         os.mkdir(dirname)
     except FileExistsError:

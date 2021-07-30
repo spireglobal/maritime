@@ -1,11 +1,8 @@
 import yaml
-from schema import schema
 import json
 import csv
 from loguru import logger
 from utilities import paging, helpers
-from gql import gql
-from nested_lookup import nested_lookup as nl
 
 logger.add('demo_client.log', rotation="500 MB", retention="10 days", level='DEBUG')
 
@@ -33,14 +30,12 @@ def read_query_file():
 
 
 def write_raw(data: dict):
-    global rows_written_to_raw_log
     settings = get_settings()
     name_of_raw_output_file = settings['name_of_raw_output_file']
     if not name_of_raw_output_file:
         return
     with open(name_of_raw_output_file, 'a+') as f:
         f.write(json.dumps(data, indent=4))
-    rows_written_to_raw_log += 1
 
 
 def write_csv(data: dict):
@@ -65,6 +60,7 @@ def write_csv(data: dict):
                 rows_written_to_csv += 1
     except Exception:
         raise
+
 
 
 def get_info():
