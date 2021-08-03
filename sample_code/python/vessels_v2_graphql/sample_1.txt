@@ -1,53 +1,65 @@
 query {
-                  vessels(
-                    first: 1000
-                  ) {
-                    pageInfo{
-                      hasNextPage
-                      correlationId
-                      endCursor
-                    }
-                    nodes {
-                      ingestionTimestamp
-                      vessel {
-                        flag
-                        name
-                        class
-                        callsign
-                        timestamp
-                        ingestionTimestamp
-                        imo
-                        mmsi
-                        shipType
-                        dimensions {
-                          a
-                          b
-                          c
-                          d
-                          width
-                          length
-                        }
-                      }
-                      positionUpdate {
-                        accuracy
-                        heading
-                        latitude
-                        longitude
-                        collectionType
-                        maneuver
-                        timestamp
-                        ingestionTimestamp
-                        navigationalStatus
-                        rot
-                        speed
-                      }
-                      voyage {
-                        eta
-                        draught
-                        destination
-                        ingestionTimestamp
-                        timestamp
-                      }
-                    }
-                  }
-                }
+  vessels {
+    pageInfo {
+      hasNextPage
+      correlationId
+      endCursor
+    }
+    nodes {
+      id
+      updateTimestamp
+      staticData {
+        aisClass
+        flag
+        name
+        callsign
+        timestamp
+        updateTimestamp
+        shipType
+        shipSubType
+        mmsi
+        callsign
+        dimensions {
+          a
+          b
+          c
+          d
+          width
+          length
+        }
+      }
+      lastPositionUpdate {
+        accuracy
+        collectionType
+        course
+        heading
+        latitude
+        longitude
+        maneuver
+        navigationalStatus
+        rot
+        speed
+        timestamp
+        updateTimestamp
+      }
+      currentVoyage {
+        destination
+        draught
+        eta
+        matchedPort {
+          matchScore
+          port {
+            name
+            unlocode
+            centerPoint{
+              latitude
+              longitude
+            }
+          }
+        }
+        timestamp
+        updateTimestamp
+      }
+    }
+  }
+}

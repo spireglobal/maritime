@@ -9,10 +9,11 @@ class Paging(object):
         self._response = response
 
     def get_pageInfo_elements(self):
-        """
-        :returns: endCursor, hasNext
-        :type endCursor: str
-        :type hasNext: bool
+        """ Gets the elements helpful for Paging
+
+        Returns:
+            endCursor(str) - pageInfo.endCursor value
+            hasNext(bool) - pageInfo.hasNext value
         """
         response = self._response
         if not response:
@@ -39,7 +40,7 @@ class Paging(object):
                 raise
 
         if self._should_stop_paging():
-            return self._response
+            return self._response, hasNextPage
         else:
             # there is more, so page
             endCursor, hasNextPage = self.get_pageInfo_elements()

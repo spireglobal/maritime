@@ -1,7 +1,7 @@
 query {
   vessels(
     areaOfInterest: {
-      geoJson: {
+      polygon: {
         type: "Polygon"
         coordinates: [
           [
@@ -21,17 +21,19 @@ query {
       endCursor
     }
     nodes {
-      ingestionTimestamp
-      vessel {
+      id
+      updateTimestamp
+      staticData {
+        aisClass
         flag
         name
-        class
         callsign
         timestamp
-        ingestionTimestamp
-        imo
-        mmsi
+        updateTimestamp
         shipType
+        shipSubType
+        mmsi
+        callsign
         dimensions {
           a
           b
@@ -41,25 +43,37 @@ query {
           length
         }
       }
-      positionUpdate {
+      lastPositionUpdate {
         accuracy
+        collectionType
+        course
         heading
         latitude
         longitude
-        collectionType
         maneuver
-        timestamp
-        ingestionTimestamp
         navigationalStatus
         rot
         speed
-      }
-      voyage {
-        eta
-        draught
-        destination
-        ingestionTimestamp
         timestamp
+        updateTimestamp
+      }
+      currentVoyage {
+        destination
+        draught
+        eta
+        matchedPort {
+          matchScore
+          port {
+            name
+            unlocode
+            centerPoint {
+              latitude
+              longitude
+            }
+          }
+        }
+        timestamp
+        updateTimestamp
       }
     }
   }

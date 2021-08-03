@@ -17,6 +17,11 @@ class BQ(object):
         self._schema_members = schema_members
 
     def _get_client(self):
+        """
+        Returns:
+            bigquery client set with retry deadline 
+        """
+        
         bigquery.DEFAULT_RETRY.with_deadline(10)
         return bigquery.Client(project=self._gcp_project_id)
 
@@ -29,6 +34,16 @@ class BQ(object):
                                              table_id=self._gcp_table_id)
 
     def get_schema(self):
+        """
+        Creates bigquery schema using SchemaField
+        
+        Returns
+        
+            schema
+            
+            keys(list) - list of keys used to create schema
+        
+        """
         types = self._get_schema_field_types()
         members = self._schema_members
         schema: list = list()
@@ -47,6 +62,7 @@ class BQ(object):
         return schema, keys
 
     def create_dataset(self):
+        
         # Get dataset object
         dataset_reference = self._get_dataset_reference()
         dataset = bigquery.Dataset(dataset_reference)
@@ -125,8 +141,18 @@ class BQ(object):
             return False
         return table
 
-    def _insert_rows(self, rows):
-        """Insert rows into the bq table"""
+    def push_rows(self, rows: list):
+        """
+        Insert rows into the bq table
+        
+        Args:
+        
+        rows(list) - list with dicts to write to bigquery
+        
+        Raises:
+        
+        gcx.BadRequest - Google Cloud bad requests
+        """
         client = self._get_client()
         table_reference = self._get_table_reference()
         table = client.get_table(table_reference)
@@ -153,4 +179,4 @@ class BQ(object):
             del rows
 
     async def insert_row_task(self, rows):
-        self._insert_rows(rows)
+        self.push_rows(rows)

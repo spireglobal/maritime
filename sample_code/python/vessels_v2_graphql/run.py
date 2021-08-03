@@ -3,6 +3,8 @@ import json
 import csv
 from loguru import logger
 from utilities import paging, helpers
+from gql import gql
+
 
 logger.add('demo_client.log', rotation="500 MB", retention="10 days", level='DEBUG')
 
@@ -84,7 +86,7 @@ def run():
         return
     response: dict = dict()
     try:
-        response = client.execute(query)
+        response = client.execute(gql(query))
     except BaseException as e:
         logger.error(e)
         raise
