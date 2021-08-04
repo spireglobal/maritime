@@ -1,0 +1,331 @@
+{
+	"info": {
+		"_postman_id": "28b7dfc6-8629-46ed-bf56-69b464a149b3",
+		"name": "GraphQL",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Vessels GraphQL BETA",
+			"item": [
+				{
+					"name": "Return all fields - all arguments",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{beta_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n  vessels(\n      shipType: [GENERAL_CARGO,CONTAINER]\n        first: 10  \n    ) {\n    pageInfo {\n      hasNextPage\n      correlationId\n      endCursor\n    }\n    nodes {\n      id\n      updateTimestamp\n      staticData {\n        aisClass\n        flag\n        name\n        callsign\n        timestamp\n        updateTimestamp\n        shipType\n        shipSubType\n        mmsi\n        callsign\n        dimensions {\n          a\n          b\n          c\n          d\n          width\n          length\n        }\n      }\n      lastPositionUpdate {\n        accuracy\n        collectionType\n        course\n        heading\n        latitude\n        longitude\n        maneuver\n        navigationalStatus\n        rot\n        speed\n        timestamp\n        updateTimestamp\n      }\n      currentVoyage {\n        destination\n        draught\n        eta\n        matchedPort {\n          matchScore\n          port {\n            name\n            unlocode\n            centerPoint {\n              latitude\n              longitude\n            }\n          }\n        }\n        timestamp\n        updateTimestamp\n      }\n    }\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://api.spire.com/graphql",
+							"protocol": "https",
+							"host": [
+								"api",
+								"spire",
+								"com"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Returns all fields available in the Vessels V2 Beta Query \"Vessels\" for first 10 vessels with the shipType General Cargo and Container.\n\nArgument(s) used: shipType, first"
+					},
+					"response": []
+				},
+				{
+					"name": "Return partial fields - After",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{beta_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n  vessels(after: \"insert-endCursor-string-here\", first: 100) {\n    pageInfo {\n      hasNextPage\n      correlationId\n      endCursor\n    }\n    nodes {\n      staticData {\n        name\n        mmsi\n        imo\n      }\n      lastPositionUpdate {\n        timestamp\n        latitude\n        longitude\n        collectionType\n      }\n    }\n  }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://api.spire.com/graphql",
+							"protocol": "https",
+							"host": [
+								"api",
+								"spire",
+								"com"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Returns data for some fields available in the Vessels V2 Beta Query \"Vessels\" for the first 100 vessels after the last request made to the service. \n\nArgument(s) used: after, first"
+					},
+					"response": []
+				},
+				{
+					"name": "Return all fields - AOI",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{beta_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n  vessels(\n    areaOfInterest: {\n      polygon: {\n        type: \"Polygon\"\n        coordinates: [\n          [\n            [-122.662353515625, 37.54239958054064]\n            [-122.13226318359375, 37.54239958054064]\n            [-122.13226318359375, 37.8813571797486]\n            [-122.662353515625, 37.8813571797486]\n            [-122.662353515625, 37.54239958054064]\n          ]\n        ]\n      }\n    }\n  ) {\n    pageInfo {\n      hasNextPage\n      correlationId\n      endCursor\n    }\n    nodes {\n      id\n      updateTimestamp\n      staticData {\n        aisClass\n        flag\n        name\n        callsign\n        timestamp\n        updateTimestamp\n        shipType\n        shipSubType\n        mmsi\n        callsign\n        dimensions {\n          a\n          b\n          c\n          d\n          width\n          length\n        }\n      }\n      lastPositionUpdate {\n        accuracy\n        collectionType\n        course\n        heading\n        latitude\n        longitude\n        maneuver\n        navigationalStatus\n        rot\n        speed\n        timestamp\n        updateTimestamp\n      }\n      currentVoyage {\n        destination\n        draught\n        eta\n        matchedPort {\n          matchScore\n          port {\n            name\n            unlocode\n            centerPoint {\n              latitude\n              longitude\n            }\n          }\n        }\n        timestamp\n        updateTimestamp\n      }\n    }\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://api.spire.com/graphql",
+							"protocol": "https",
+							"host": [
+								"api",
+								"spire",
+								"com"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Returns data for all fields available in the Vessels V2 Beta Query \"Vessels\" for all vessels in a specified AOI.\n\nArgument(s) used: areaOfInterest"
+					},
+					"response": []
+				},
+				{
+					"name": "Return all fields - MMSI",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{beta_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n  vessels(mmsi:[367455580,366962000,636020901,311000136,311027900,311027800,311038100,636019913,311000182,311000183,311000184,311000185,311000111,311000176,477131400,311000227,311000228,538005384,369142000,538005782,311000748,311000747,311000746,311000745,311000744,311000743,311000742,232006457,235112038,235033297,232011666,235089702,232004397,235004128,235000616,235076772,232005254,232011348,314419000,235007390,235097134,235052217,235035847,235020294,232003618,235104266,235087637,235097551,232011407,235078712,235076002,235005115,235083481,235012387,235090081,601715000,235110901,232006858,235093244,235118101,235075634,232002521,232003050,233486000,232027112,232022713,232026992,235077964,235054179,232018710,636018870,232035447,235089496,235000942,235102284,235087645,234002000,235089986,235084419,232006130,235110248,232013993,304111000,258118000,258193000,248730000,244074000,235089965,538007957,232004190,244020729,538004386,235000097,234900000,235060486,235097835,235002542,235088405,235087119,311000463]) {\n    pageInfo {\n      hasNextPage\n      correlationId\n      endCursor\n    }\n    nodes {\n      id\n      updateTimestamp\n      staticData {\n        aisClass\n        flag\n        name\n        callsign\n        timestamp\n        updateTimestamp\n        shipType\n        shipSubType\n        mmsi\n        callsign\n        dimensions {\n          a\n          b\n          c\n          d\n          width\n          length\n        }\n      }\n      lastPositionUpdate {\n        accuracy\n        collectionType\n        course\n        heading\n        latitude\n        longitude\n        maneuver\n        navigationalStatus\n        rot\n        speed\n        timestamp\n        updateTimestamp\n      }\n      currentVoyage {\n        destination\n        draught\n        eta\n        matchedPort {\n          matchScore\n          port {\n            name\n            unlocode\n            centerPoint {\n              latitude\n              longitude\n            }\n          }\n        }\n        timestamp\n        updateTimestamp\n      }\n    }\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://api.spire.com/graphql",
+							"protocol": "https",
+							"host": [
+								"api",
+								"spire",
+								"com"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Returns data for all fields available in the Vessels V2 Beta Query \"Vessels\" for all vessels globally. Filtered using an mmsi list of 100 vessels.\n\nArgument(s) used: mmsi"
+					},
+					"response": []
+				},
+				{
+					"name": "Return all fields - shipType",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{beta_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n  vessels(\n      shipType: [GENERAL_CARGO,CONTAINER]\n        first: 10  \n    ) {\n    pageInfo {\n      hasNextPage\n      correlationId\n      endCursor\n    }\n    nodes {\n      id\n      updateTimestamp\n      staticData {\n        aisClass\n        flag\n        name\n        callsign\n        timestamp\n        updateTimestamp\n        shipType\n        shipSubType\n        mmsi\n        callsign\n        dimensions {\n          a\n          b\n          c\n          d\n          width\n          length\n        }\n      }\n      lastPositionUpdate {\n        accuracy\n        collectionType\n        course\n        heading\n        latitude\n        longitude\n        maneuver\n        navigationalStatus\n        rot\n        speed\n        timestamp\n        updateTimestamp\n      }\n      currentVoyage {\n        destination\n        draught\n        eta\n        matchedPort {\n          matchScore\n          port {\n            name\n            unlocode\n            centerPoint {\n              latitude\n              longitude\n            }\n          }\n        }\n        timestamp\n        updateTimestamp\n      }\n    }\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://api.spire.com/graphql",
+							"protocol": "https",
+							"host": [
+								"api",
+								"spire",
+								"com"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Returns all fields available in the Vessels V2 Beta Query \"Vessels\" for first 10 vessels with the shipType General Cargo and Container.\n\nArgument(s) used: shipType, first"
+					},
+					"response": []
+				},
+				{
+					"name": "Return all fields - IMO",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{beta_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n  vessels(imo:[9758428,9729269,9596272,9744922,9744934,9744910,9364966,9763813,9436422,9414137,9349564,9502726,9410909,9402249,9399923,9399935,9416434,9490686,9490698,9297577,9349552,9295206,9303807,9394234,9370824,9318474,9409546,9456783,9309021,9576741,9477866,9295579,9386483,9434450,9336775,9490662,9355252,9361251,9427940,9179854,9337030,9354454,9457294,9114775,9154323,9232163,9295127,9347152,9147461,9416044,9380350,9380594,9394765,9331000,9394753,9358436,9279812,9403205,9465368,9144718,9399193,9461257,9102291,9516222,9720964,9718454,9338084,9235816,9644835,9480954,9280873,9323895,9712462,9216406,9311866,9400954,9737060,9323390,9521203,9191723,9389813,9490636,9451484,9398981,9402110,9537276,9190107,9332195,9323510,9226633,9461087,9290775,9354648,9308417,9485021,9406180,9416707,9494486,9892494,9231573,9287340,9817523,9596492,9483231,9452854,9199828,9792917,9458468,9394222,9443164,9563938,9757785,9340362,9386433,9427952,9697430,9228057,9371907,9256377,9894818,9354533,9372858,9380075,9848510,9313280,9502738,9251846,9356438]) {\n    pageInfo {\n      hasNextPage\n      correlationId\n      endCursor\n    }\n    nodes {\n      id\n      updateTimestamp\n      staticData {\n        aisClass\n        flag\n        name\n        callsign\n        timestamp\n        updateTimestamp\n        shipType\n        shipSubType\n        mmsi\n        callsign\n        dimensions {\n          a\n          b\n          c\n          d\n          width\n          length\n        }\n      }\n      lastPositionUpdate {\n        accuracy\n        collectionType\n        course\n        heading\n        latitude\n        longitude\n        maneuver\n        navigationalStatus\n        rot\n        speed\n        timestamp\n        updateTimestamp\n      }\n      currentVoyage {\n        destination\n        draught\n        eta\n        matchedPort {\n          matchScore\n          port {\n            name\n            unlocode\n            centerPoint {\n              latitude\n              longitude\n            }\n          }\n        }\n        timestamp\n        updateTimestamp\n      }\n    }\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://api.spire.com/graphql",
+							"protocol": "https",
+							"host": [
+								"api",
+								"spire",
+								"com"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Returns all fields available in the Vessels V2 Beta Query \"Vessels\" for all vessels globally. No arguments are applied to filter the output data."
+					},
+					"response": []
+				},
+				{
+					"name": "Return partial fields - lastPositionUpdate",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{beta_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n  vessels(\n    lastPositionUpdate: {\n      startTime: \"2021-08-02T00:31:42.780Z\"\n      endTime: \"2021-08-04T00:31:42.780Z\"\n    }\n    first: 100\n  ) {\n    pageInfo {\n      hasNextPage\n      correlationId\n      endCursor\n    }\n    nodes {\n      staticData {\n        name\n        mmsi\n        imo\n      }\n      lastPositionUpdate {\n        timestamp\n        latitude\n        longitude\n        collectionType\n      }\n    }\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://api.spire.com/graphql",
+							"protocol": "https",
+							"host": [
+								"api",
+								"spire",
+								"com"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Returns data for some fields available in the Vessels V2 Beta Query \"Vessels\" for the first 100 vessels which last position was updated between the specified startTime and endTime.\n\nArgument(s) used: lastPositionUpdate, first"
+					},
+					"response": []
+				}
+			],
+			"description": "This folder contains sample queries to use with the Vessels V2 Beta API. ",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "beta_token",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
