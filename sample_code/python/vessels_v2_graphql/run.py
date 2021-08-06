@@ -108,6 +108,8 @@ def run():
         if pages_to_process == 1:
             break
         elif pages_to_process:
+            if not hasNextPage or not response:
+                break
             if pages_processed >= pages_to_process:
                 break
         elif not hasNextPage or not response:

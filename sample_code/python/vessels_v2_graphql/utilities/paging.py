@@ -27,7 +27,7 @@ class Paging(object):
     def _should_stop_paging(self):
         # pageInfo.hasNextPage: false and pageInfo.endCursor: null
         endCursor, hasNextPage = self.get_pageInfo_elements()
-        logger.debug(f"Stop paging?  hasNextPage: {hasNextPage}, endCursor: {endCursor}")
+        logger.debug(f"Paging debug: hasNextPage: {hasNextPage}, endCursor: {endCursor}")
         if not endCursor or not hasNextPage:
             return True
         elif hasNextPage and endCursor:
