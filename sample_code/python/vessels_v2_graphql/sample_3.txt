@@ -33,6 +33,7 @@ query {
         shipType
         shipSubType
         mmsi
+        imo
         callsign
         dimensions {
           a
