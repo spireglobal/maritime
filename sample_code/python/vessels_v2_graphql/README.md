@@ -71,8 +71,9 @@ pipenv run python3 run.py
 ```
 
 virtual environment example:
-* ```my_virtual_env``` as the directory containing the Python virtual environment)
+* ```my_virtual_env``` as the directory containing the Python virtual environment
 * ```vessels_v2_graphql``` as the directory containing this repository
+
 ```
 source my_virtual_env/bin/activate  [ENTER]
 cd vessels_v2_graphql [ENTER]
