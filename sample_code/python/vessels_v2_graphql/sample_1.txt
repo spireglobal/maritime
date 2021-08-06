@@ -46,17 +46,6 @@ query {
         destination
         draught
         eta
-        matchedPort {
-          matchScore
-          port {
-            name
-            unlocode
-            centerPoint{
-              latitude
-              longitude
-            }
-          }
-        }
         timestamp
         updateTimestamp
       }
