@@ -10,7 +10,7 @@ class Paging(object):
 
     def get_pageInfo_elements(self):
         """ Gets the elements helpful for Paging
-
+        
         Returns:
             endCursor(str) - pageInfo.endCursor value
             hasNext(bool) - pageInfo.hasNext value
@@ -27,9 +27,12 @@ class Paging(object):
     def _should_stop_paging(self):
         # pageInfo.hasNextPage: false and pageInfo.endCursor: null
         endCursor, hasNextPage = self.get_pageInfo_elements()
+        logger.debug(f"Stop paging?  hasNextPage: {hasNextPage}, endCursor: {endCursor}")
         if not endCursor or not hasNextPage:
             return True
-        return False
+        elif hasNextPage and endCursor:
+            return False
+
 
     def page_and_get_response(self, client, query, hasNextPage=True):
         if not self._response:
@@ -40,6 +43,7 @@ class Paging(object):
                 raise
 
         if self._should_stop_paging():
+            hasNextPage = False
             return self._response, hasNextPage
         else:
             # there is more, so page

@@ -99,6 +99,7 @@ def run():
     logger.info("Paging started")
     while True:
         response, hasNextPage = pg.page_and_get_response(client, query)
+        logger.debug(f"hasNextPage: {hasNextPage}")
         write_raw(response)
         csv_data = helpers.transform_response_for_loading(response, schema_members)
         write_csv(csv_data)
