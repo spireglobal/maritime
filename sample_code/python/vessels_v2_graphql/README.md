@@ -19,6 +19,7 @@ Edit the settings.yaml file
 |name_of_raw_output_file             |Name of raw output log. If blank, no log is produced|
 |name_of_csv_file                    |Name of csv file. If blank, no file is produced|
 |pages_to_process                    |Max number of pages to process.  A helpful setting for debugging.  If set to 0, all pages are processed|
+|test_name                           |Optional label that fills the csv column ```test_name```|
 
 **Note:**
 * Files are all assumed to be in the same directory as the program
@@ -40,6 +41,7 @@ pageInfo{
 * Do not add any of the following input parameters to your query.  These will be inserted as part of the paging routine:
   * first
   * after
+* This demo uses a value of 100 for ```first```, which means only 100 items per page are returned.  The service allows up to 1000 items, however the demo is not designed for specifying number of items per page
   
 ### Samples
 

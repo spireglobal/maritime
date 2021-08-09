@@ -76,6 +76,7 @@ def get_info():
 def run():
     global pages_processed
     settings = get_settings()
+    test_name = settings['test_name']
     pages_to_process = settings['pages_to_process']
     # make a client connection
     client = helpers.get_gql_client()
@@ -101,7 +102,7 @@ def run():
         response, hasNextPage = pg.page_and_get_response(client, query)
         logger.debug(f"hasNextPage: {hasNextPage}")
         write_raw(response)
-        csv_data = helpers.transform_response_for_loading(response, schema_members)
+        csv_data = helpers.transform_response_for_loading(response=response, schema=schema_members, test_name=test_name)
         write_csv(csv_data)
         pages_processed += 1
         logger.info(f"Page: {pages_processed}")
