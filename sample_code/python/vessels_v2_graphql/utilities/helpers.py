@@ -7,10 +7,11 @@ from gql.transport.requests import RequestsHTTPTransport
 from loguru import logger
 from requests import exceptions
 import json
+from nested_lookup import nested_lookup as nl
 
 
 def get_gql_client():
-    """ Establishes a gql client 
+    """ Establishes a gql client
 
     Returns:
 
@@ -58,8 +59,8 @@ def get_vessels_v2_members():
         ('row_insert_timestamp', "TIMESTAMP"),
         ('test_execute_start_time', "STRING"),
         ('test_name', "STRING"),
-        ('nodes_updateTimestamp', "STRING"),
-        ('id', "STRING"),
+        ('node_updateTimestamp', "STRING"),
+        ('node_id', "STRING"),
         ('staticData_updateTimestamp', "STRING"),
         ('staticData_timestamp', "STRING"),
         ('mmsi', "string"),
@@ -93,11 +94,11 @@ def get_vessels_v2_members():
         ('draught', 'string'),
         ('eta', 'string'),
         ('destination', 'string'),
-        ('matchedPort_name', 'string'),
-        ('matchedPort_unlocode', 'string'),
-        ('matchedPort_lat', 'string'),
-        ('matchedPort_long', 'string'),
-        ('matchedPort_score', 'FLOAT')
+        # ('matchedPort_name', 'string'),
+        # ('matchedPort_unlocode', 'string'),
+        # ('matchedPort_lat', 'string'),
+        # ('matchedPort_long', 'string'),
+        # ('matchedPort_score', 'string')
     )
 
 
@@ -117,11 +118,12 @@ def transform_response_for_loading(response, schema, test_name='', test_execute_
     if not test_execute_start_time:
         test_execute_start_time = datetime.utcnow()
 
-    nodes: list = response['vessels']['nodes']
     # flatten the dictionaries and add to flats list
     flats: list = list()
-    node: dict
-    for node in nodes:
+    nodes: list = nl('nodes', response)
+    node_list: list = nodes[0]
+    for unique_node in node_list:
+
         flat: dict = dict()
         v2_schema = [i[0] for i in schema]
         for key in v2_schema:
@@ -129,19 +131,23 @@ def transform_response_for_loading(response, schema, test_name='', test_execute_
         flat['row_insert_timestamp'] = "AUTO"
         flat['test_execute_start_time'] = test_execute_start_time
         flat['test_name'] = test_name
-        flat["nodes_updateTimestamp"] = node["updateTimestamp"]
+        flat['node_updateTimestamp'] = unique_node['updateTimestamp']
+        flat['node_id'] = unique_node['id']
+
+        # handle odd dimensions bug
+        dimensions: dict = unique_node['staticData']['dimensions']
+        for key, value in dimensions.items():
+            if not value:
+                value = ''
+            flat[key] = value
 
         # vessel in node
-        vessel: dict = node['staticData']
+        vessel: dict = unique_node['staticData']
         for k, v in vessel.items():
             if k == "updateTimestamp":
                 flat["staticData_updateTimestamp"] = v
             elif k == 'timestamp':
                 flat['staticData_timestamp'] = v
-            elif k == 'dimensions':
-                dimensions: dict = v
-                for key, value in dimensions.items():
-                    flat[k] = value
             else:
                 if not k == 'dimensions':
                     if not v:
@@ -151,7 +157,7 @@ def transform_response_for_loading(response, schema, test_name='', test_execute_
         # lastPositionUpdate in node
         lastPositionUpdate: dict = dict()
         try:
-            lastPositionUpdate: dict = node['lastPositionUpdate']
+            lastPositionUpdate: dict = unique_node['lastPositionUpdate']
         except BaseException as e:
             logger.error(e)
             logger.error("Could be there is no lastPositionUpdate")
@@ -170,7 +176,7 @@ def transform_response_for_loading(response, schema, test_name='', test_execute_
         # currentVoyage in node
         currentVoyage: dict = dict()
         try:
-            currentVoyage = node['currentVoyage']
+            currentVoyage = unique_node['currentVoyage']
         except BaseException as e:
             logger.error(e)
             logger.error("Could be there is no currentVoyage")
@@ -180,42 +186,42 @@ def transform_response_for_loading(response, schema, test_name='', test_execute_
                     flat['currentVoyage_updateTimestamp'] = v
                 elif k == 'timestamp':
                     flat['currentVoyage_timestamp'] = v
-                elif k == 'matchedPort':
-                    try:
-                        flat['matchedPort_score'] = currentVoyage['matchedPort']['matchScore']
-                    except (KeyError, TypeError):
-                        logger.error(f"""
-                                     matchedPort error
-
-                                     {node}
-
-                                     """)
-
-                    port: dict = dict()
-                    try:
-                        port = currentVoyage['port']
-                    except (KeyError, TypeError):
-                        logger.error(f"""
-                                     No port for matchedPort
-
-                                     {node}
-
-                                     """)
-                    try:
-                        centerPoint = port['centerPoint']
-                        flat['matchedPort_name'] = centerPoint['mathedPort']['name']
-                        flat['matchedPort_unlocode'] = centerPoint['matchedPort']['unlocode']
-                        latitude = centerPoint['latitude']
-                        longitude = centerPoint['longitude']
-                        flat['matchedPort_lat'] = latitude
-                        flat['matchedPort_long'] = longitude
-                    except (KeyError, TypeError):
-                        logger.error(f"""
-                                     No centerPoint
-
-                                     {node}
-
-                                     """)
+                # elif k == 'matchedPort':
+                #     try:
+                #         flat['matchedPort_score'] = currentVoyage['matchedPort']['matchScore']
+                #     except (KeyError, TypeError):
+                #         logger.error(f"""
+                #                      matchedPort error
+                #
+                #                      {node}
+                #
+                #                      """)
+                #
+                #     port: dict = dict()
+                #     try:
+                #         port = currentVoyage['port']
+                #     except (KeyError, TypeError):
+                #         logger.error(f"""
+                #                      No port for matchedPort
+                #
+                #                      {node}
+                #
+                #                      """)
+                #     try:
+                #         centerPoint = port['centerPoint']
+                #         flat['matchedPort_name'] = centerPoint['mathedPort']['name']
+                #         flat['matchedPort_unlocode'] = centerPoint['matchedPort']['unlocode']
+                #         latitude = centerPoint['latitude']
+                #         longitude = centerPoint['longitude']
+                #         flat['matchedPort_lat'] = latitude
+                #         flat['matchedPort_long'] = longitude
+                #     except (KeyError, TypeError):
+                #         logger.error(f"""
+                #                      No centerPoint
+                #
+                #                      {node}
+                #
+                #                      """)
                 else:
                     if not v:
                         v = ''
@@ -261,12 +267,12 @@ def insert_into_query_header(query, insert_text=''):
         # remove the existing )
         tmp: str = query.replace(')', '')
         # add paging elements where the ) once was .. + 1 for some spacing in case
-        beginning: str = query[:loc]
+        beginning: str = tmp[:loc]
         end: str = tmp[loc:]
         new_query = beginning + ' ' + insert_text + ' ) ' + end
     else:
         return query
-    return new_query
+    return new_query.replace("'", '"')
 
 
 def get_csv_list_from_dir(directory):
@@ -340,14 +346,40 @@ def csv_to_dict(csv_file: str):
     Returns:
         dict - dictionary representing csv
     """
-    dict_from_csv: dict = None
+    dict_from_csv: dict = dict()
     try:
         with open(csv_file, "r") as f:
             dict_reader = csv.DictReader(f)
-            ordered_list_from_csv: list = list(dict_reader)[0]
-            dict_from_csv = dict(ordered_list_from_csv)
+            dict_list: list = list()
+            for line in dict_reader:
+                dict_list.append(line)
     except FileNotFoundError as e:
         logger.error(e)
         raise
-    return dict_from_csv
+    return dict_list
 
+
+def locate_file():
+    for root, dirs, files in os.walk('/Users/brucebookman'):
+        for file in files:
+            # change the extension from '.mp3' to
+            # the one of your choice.
+            if file.endswith('.csv'):
+                print(f"""
+                root: {root}
+                dirs: {dirs}
+                file: {file}
+                """)
+
+
+def pretty_string_dict(dictionary, with_empties=True):
+    result: str = ''
+    if with_empties:
+        result = json.dumps(dictionary, indent=2)
+    else:
+        tmp_dict: dict = dict()
+        for k, v in dictionary:
+            if v:
+                tmp_dict[k] = v
+        result = json.dumps(tmp_dict, indent=2)
+    return result
