@@ -10,7 +10,7 @@ class Paging(object):
 
     def get_pageInfo_elements(self):
         """ Gets the elements helpful for Paging
-        
+
         Returns:
             endCursor(str) - pageInfo.endCursor value
             hasNext(bool) - pageInfo.hasNext value
@@ -27,12 +27,14 @@ class Paging(object):
     def _should_stop_paging(self):
         # pageInfo.hasNextPage: false and pageInfo.endCursor: null
         endCursor, hasNextPage = self.get_pageInfo_elements()
-        logger.debug(f"Paging debug: hasNextPage: {hasNextPage}, endCursor: {endCursor}")
-        if not endCursor or not hasNextPage:
-            return True
-        elif hasNextPage and endCursor:
+        logger.debug(f"Stop paging?  hasNextPage: {hasNextPage}, endCursor: {endCursor}")
+        if endCursor or not hasNextPage:
             return False
+        elif hasNextPage and endCursor:
+            return True
 
+    def get_response(self):
+        return self._response
 
     def page_and_get_response(self, client, query, hasNextPage=True):
         if not self._response:
@@ -54,6 +56,44 @@ class Paging(object):
             try:
                 self._response = client.execute(gql(query))
             except BaseException as e:
-                logger.error(e)
-                self._response = None
+                logger.warning(e)
+                self._response = False
+
             return self._response, hasNextPage
+
+    def start_paging(self, client, query_text):
+        page_count: int = 0
+        end_time = None
+        responses: list = list()  # to help with error reporting of last response
+        while True:
+            response: dict = dict()
+            hasNextPage: bool = False
+            try:
+                response, hasNextPage = self.page_and_get_response(client, query_text)
+                responses.append(response)
+            except BaseException as e:
+                logger.error(e)
+                self._detailed_error(responses, page_count, hasNextPage)
+                raise
+
+            if not response and hasNextPage:
+                self._detailed_error(responses, page_count, hasNextPage)
+                assert False
+            elif not hasNextPage and not response:
+                logger.info("DONE PAGING, the 'error' below is just information")
+                self._detailed_error(responses, page_count, hasNextPage)
+            elif response and hasNextPage:
+                page_count += 1
+                logger.info(f"Page: {page_count}")
+                yield response, page_count
+
+    def _detailed_error(self, responses, page, hasNextPage):
+        if len(responses) > 4:
+            responses.pop()  # control amount of RAM consumed
+        previous = responses[len(responses) - 1]
+        pretty_previous = helpers.pretty_string_dict(previous, with_empties=False)
+        logger.error(f"""
+        Paged #{page} pages
+        Current hasNextPage value: {hasNextPage}
+        Previous response:
+        """ + pretty_previous)

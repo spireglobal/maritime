@@ -1,5 +1,5 @@
 endpoint: 'https://api.spire.com/graphql'
-token: ''
+token: 'k6qLvUxATNeqOJw957NhYhfr6iIQCfWX'
 name_of_gql_query_file: 'sample_1.txt'
 name_of_raw_output_file: 'raw.log'   # if set to "" no file will be produced
 name_of_csv_file: 'parsed.csv' # if set to "" no file will be produced

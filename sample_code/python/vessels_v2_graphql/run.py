@@ -53,6 +53,7 @@ def write_csv(data: dict):
     try:
         with open(name_of_csv_file, 'a+') as f:
             writer = csv.DictWriter(f, fieldnames=csv_columns)
+            logger.debug(f"WROTE HEADER: {wrote_csv_header}")
             if not wrote_csv_header:
                 writer.writeheader()
                 wrote_csv_header = True
