@@ -359,27 +359,29 @@ def csv_to_dict(csv_file: str):
     return dict_list
 
 
-def locate_file():
-    for root, dirs, files in os.walk('/Users/brucebookman'):
+def locate_file(filename):
+    root: str = ''
+    for root, dirs, files in os.walk('/'):
         for file in files:
             # change the extension from '.mp3' to
             # the one of your choice.
-            if file.endswith('.csv'):
-                print(f"""
-                root: {root}
-                dirs: {dirs}
-                file: {file}
-                """)
+            if filename in file:
+                return root
+    return root
+
 
 
 def pretty_string_dict(dictionary, with_empties=True):
     result: str = ''
+    if not dictionary:
+        return result
     if with_empties:
         result = json.dumps(dictionary, indent=2)
     else:
         tmp_dict: dict = dict()
-        for k, v in dictionary:
+        for k, v in dictionary.items():
             if v:
                 tmp_dict[k] = v
         result = json.dumps(tmp_dict, indent=2)
     return result
+
