@@ -5,7 +5,7 @@ from utilities import helpers
 
 class Paging(object):
 
-    def __init__(self, response):
+    def __init__(self, response=None):
         self._response = response
 
     def get_pageInfo_elements(self):
@@ -37,6 +37,16 @@ class Paging(object):
         return self._response
 
     def page_and_get_response(self, client, query, hasNextPage=True):
+        """
+        Args:
+            client: gql client
+            query(str): query string
+            hasNextPage(bool): optional - paging element, is there a next page
+
+        Returns:
+            response(dict): service response to query
+            hasNextPage(bool): paging element, is there a next page
+        """
         if not self._response:
             try:
                 self._response = client.execute(gql(query))
