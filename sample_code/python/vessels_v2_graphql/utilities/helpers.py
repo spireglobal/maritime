@@ -121,7 +121,12 @@ def transform_response_for_loading(response, schema, test_name='', test_execute_
     # flatten the dictionaries and add to flats list
     flats: list = list()
     nodes: list = nl('nodes', response)
-    node_list: list = nodes[0]
+    try:
+        node_list: list = nodes[0]
+    except IndexError as e:
+        logger.debug(f"Most likely this means there are no more pages\n{e}")
+        return flats
+
     for unique_node in node_list:
 
         flat: dict = dict()
@@ -186,42 +191,6 @@ def transform_response_for_loading(response, schema, test_name='', test_execute_
                     flat['currentVoyage_updateTimestamp'] = v
                 elif k == 'timestamp':
                     flat['currentVoyage_timestamp'] = v
-                # elif k == 'matchedPort':
-                #     try:
-                #         flat['matchedPort_score'] = currentVoyage['matchedPort']['matchScore']
-                #     except (KeyError, TypeError):
-                #         logger.error(f"""
-                #                      matchedPort error
-                #
-                #                      {node}
-                #
-                #                      """)
-                #
-                #     port: dict = dict()
-                #     try:
-                #         port = currentVoyage['port']
-                #     except (KeyError, TypeError):
-                #         logger.error(f"""
-                #                      No port for matchedPort
-                #
-                #                      {node}
-                #
-                #                      """)
-                #     try:
-                #         centerPoint = port['centerPoint']
-                #         flat['matchedPort_name'] = centerPoint['mathedPort']['name']
-                #         flat['matchedPort_unlocode'] = centerPoint['matchedPort']['unlocode']
-                #         latitude = centerPoint['latitude']
-                #         longitude = centerPoint['longitude']
-                #         flat['matchedPort_lat'] = latitude
-                #         flat['matchedPort_long'] = longitude
-                #     except (KeyError, TypeError):
-                #         logger.error(f"""
-                #                      No centerPoint
-                #
-                #                      {node}
-                #
-                #                      """)
                 else:
                     if not v:
                         v = ''

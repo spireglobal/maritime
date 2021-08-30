@@ -102,22 +102,29 @@ def run():
     while True:
         response, hasNextPage = pg.page_and_get_response(client, query)
         logger.debug(f"hasNextPage: {hasNextPage}")
-        write_raw(response)
-        csv_data = helpers.transform_response_for_loading(response=response, schema=schema_members, test_name=test_name)
-        write_csv(csv_data)
-        pages_processed += 1
-        logger.info(f"Page: {pages_processed}")
-        if pages_to_process == 1:
-            break
-        elif pages_to_process:
-            if not hasNextPage or not response:
+        if response:
+            write_raw(response)
+            csv_data = helpers.transform_response_for_loading(response=response, schema=schema_members, test_name=test_name)
+            if csv_data:
+                write_csv(csv_data)
+                pages_processed += 1
+                logger.info(f"Page: {pages_processed}")
+                if pages_to_process == 1:
+                    break
+                elif pages_to_process:
+                    if not hasNextPage or not response:
+                        break
+                    if pages_processed >= pages_to_process:
+                        break
+                elif not hasNextPage or not response:
+                    break
+            else:
+                logger.info("Did not get data for csv, either because there are no more pages, or did not get a response")
                 break
-            if pages_processed >= pages_to_process:
-                break
-        elif not hasNextPage or not response:
+        else:
+            logger.info("No response or no more responses")
             break
-
-    logger.info(get_info())
+        logger.info(get_info())
 
 
 if __name__ == '__main__':
