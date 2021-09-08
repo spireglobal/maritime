@@ -99,6 +99,7 @@ def run():
 
     # page, write, util complete
     logger.info("Paging started")
+    hasNextPage: bool = False
     while True:
         response, hasNextPage = pg.page_and_get_response(client, query)
         logger.debug(f"hasNextPage: {hasNextPage}")

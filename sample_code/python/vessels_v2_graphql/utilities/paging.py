@@ -28,10 +28,12 @@ class Paging(object):
         # pageInfo.hasNextPage: false and pageInfo.endCursor: null
         endCursor, hasNextPage = self.get_pageInfo_elements()
         logger.debug(f"Stop paging?  hasNextPage: {hasNextPage}, endCursor: {endCursor}")
-        if endCursor or not hasNextPage:
-            return False
-        elif hasNextPage and endCursor:
+        if not endCursor:
             return True
+        elif endCursor and hasNextPage:
+            return False
+        else:
+            return False
 
     def get_response(self):
         return self._response
@@ -92,7 +94,7 @@ class Paging(object):
             elif not hasNextPage and not response:
                 logger.info("DONE PAGING, the 'error' below is just information")
                 self._detailed_error(responses, page_count, hasNextPage)
-            elif response and hasNextPage:
+            elif response:
                 page_count += 1
                 logger.info(f"Page: {page_count}")
                 yield response, page_count
