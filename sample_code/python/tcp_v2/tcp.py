@@ -97,6 +97,7 @@ class TCP(object):
         try:
             received = self.sock.recv(4096)
             if received:
+                log.info(f"RECIEVED: {received}")
                 return received
         except socket.timeout as e:
             log.error(e)
@@ -117,6 +118,7 @@ class TCP(object):
         while buffering:
             if "\n" in temp_buffer:
                 (line, temp_buffer) = temp_buffer.split("\n", 1)
+                log.info(f"GOT LINE: {line}")
                 yield line + "\n"
             else:
                 more = self._read()
@@ -127,8 +129,10 @@ class TCP(object):
                 else:
                     temp_buffer += more
         if temp_buffer:
+            log.info(f"GOT LINE: {temp_buffer}")
             yield temp_buffer
         else:
+            log.debug(f"NO BUFFER: {temp_buffer}")
             yield "NO"
         
     def get_data(self):
@@ -159,6 +163,7 @@ class TCP(object):
         reply = self._get_lines()
         for line in reply:
             if 'Keep-alive' in line:
+                log.debug(line)
                 continue
             # Try another connection if no lines were yeilded
             if line == "NO":

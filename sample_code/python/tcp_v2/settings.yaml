@@ -1,11 +1,11 @@
 server: 'streamingv2.ais.spire.com'
 port: 56784
-token: ""
+token:  ""
 gcp_dataset_id: ''
 gcp_table_id: ''
 gcp_project_id: ''
 max_messages: 0
-max_minutes: 10
+max_minutes: 3
 csv_path: ''
 raw_path: ''
-program_log: 'tcp_2_csv.log'
+program_log: ''

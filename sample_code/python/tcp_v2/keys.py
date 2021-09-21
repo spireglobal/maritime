@@ -116,6 +116,6 @@ decode_keys = [
     'year',
     'ais_version',
     'maneuver',
-    
+    'internal_timestamp'
                
                ]

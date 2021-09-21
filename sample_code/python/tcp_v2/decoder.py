@@ -131,12 +131,20 @@ def parse_raw(lines):
                         # The limit is 3 parts, so decode
                         try:
                             decoded = decode_msg(first_line, second_line)
-                        except pe.InvalidNMEAMessageException as e:
+                            # InvalidNMEAMessageException, MissingMultipartMessageException, TooManyMessagesException
+                        except (pe.InvalidNMEAMessageException,
+                                pe.UnknownMessageException,
+                                pe.MissingMultipartMessageException,
+                                pe.MissingMultipartMessageException) as e:
                             msg = f"""
+                            NOTE, THIS IS A WARNING, NOT AN ERROR
+                            PLEASE CHECK IF THE EXPECTED csv OR raw log was produced
+                            If so, then this warning can be ignored
+                                                            
                             line: {line}
                             {e}
                             """
-                            log.error(msg)
+                            log.warning(msg)
                             continue
 
                         complete: dict = _add_decoded_and_non_decoded(
