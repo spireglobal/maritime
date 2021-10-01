@@ -1,7 +1,7 @@
+
 from google.cloud import bigquery
 from google.api_core import exceptions as gcx
 from loguru import logger
-import asyncio
 
 
 class BQ(object):
@@ -19,9 +19,9 @@ class BQ(object):
     def _get_client(self):
         """
         Returns:
-            bigquery client set with retry deadline 
+            bigquery client set with retry deadline
         """
-        
+
         bigquery.DEFAULT_RETRY.with_deadline(10)
         return bigquery.Client(project=self._gcp_project_id)
 
@@ -36,13 +36,13 @@ class BQ(object):
     def get_schema(self):
         """
         Creates bigquery schema using SchemaField
-        
+
         Returns
-        
+
             schema
-            
+
             keys(list) - list of keys used to create schema
-        
+
         """
         types = self._get_schema_field_types()
         members = self._schema_members
@@ -62,7 +62,7 @@ class BQ(object):
         return schema, keys
 
     def create_dataset(self):
-        
+
         # Get dataset object
         dataset_reference = self._get_dataset_reference()
         dataset = bigquery.Dataset(dataset_reference)
@@ -95,9 +95,6 @@ class BQ(object):
         if not table:
             try:
                 table = bigquery.Table(table_reference, schema)
-                table.time_partitioning = bigquery.TimePartitioning(type_=bigquery.TimePartitioningType.DAY,
-                                                                    field='row_insert_timestamp',
-                                                                    expiration_ms=7776000000)
                 client.create_table(table)
                 logger.debug(f"Table created: {table_reference} ")
             except (gcx.AlreadyExists, gcx.Conflict):
@@ -112,7 +109,6 @@ class BQ(object):
                     logger.error(e)
                     raise
                 logger.debug(f"Table updated with new fields: {table_reference} ")
-
 
     def _get_schema_field_types(self):
         return ("STRING",
@@ -144,13 +140,13 @@ class BQ(object):
     def push_rows(self, rows: list):
         """
         Insert rows into the bq table
-        
+
         Args:
-        
+
         rows(list) - list with dicts to write to bigquery
-        
+
         Raises:
-        
+
         gcx.BadRequest - Google Cloud bad requests
         """
         client = self._get_client()
@@ -164,6 +160,7 @@ class BQ(object):
                 if errors:
                     logger.error(f"""BQ ERROR: 
                     {errors}""")
+            logger.info(f"Rows pushed to BQ: {len(rows)}")
             del rows
         except gcx.BadRequest as b:
             logger.error(b)
@@ -180,3 +177,7 @@ class BQ(object):
 
     async def insert_row_task(self, rows):
         self.push_rows(rows)
+        logger.info(f"Rows stored: {len(rows)} ")
+
+
+

@@ -1,16 +1,12 @@
-import csv
-import os
 from datetime import datetime
-import yaml
-from gql import Client
-from gql.transport.requests import RequestsHTTPTransport
 from loguru import logger
-from requests import exceptions
 import json
 from nested_lookup import nested_lookup as nl
+from gql import Client
+from gql.transport.requests import RequestsHTTPTransport
+from requests import exceptions
 
-
-def get_gql_client():
+def get_gql_client(settings):
     """ Establishes a gql client
 
     Returns:
@@ -22,7 +18,6 @@ def get_gql_client():
         ConnectionTimeout
 
     """
-    settings = get_settings()
     endpoint = settings['endpoint']
     token = settings['token']
 
@@ -56,9 +51,6 @@ def get_vessels_v2_members():
     """
 
     return (
-        ('row_insert_timestamp', "TIMESTAMP"),
-        ('test_execute_start_time', "STRING"),
-        ('test_name', "STRING"),
         ('node_updateTimestamp', "STRING"),
         ('node_id', "STRING"),
         ('staticData_updateTimestamp', "STRING"),
@@ -94,21 +86,15 @@ def get_vessels_v2_members():
         ('draught', 'string'),
         ('eta', 'string'),
         ('destination', 'string'),
-        # ('matchedPort_name', 'string'),
-        # ('matchedPort_unlocode', 'string'),
-        # ('matchedPort_lat', 'string'),
-        # ('matchedPort_long', 'string'),
-        # ('matchedPort_score', 'string')
     )
 
 
-def transform_response_for_loading(response, schema, test_name='', test_execute_start_time=None):
+def transform_response_for_loading(response, schema, test_execute_start_time=None):
     """Flattens complex response dictionary
     Args:
 
         response(dict) - response from GQL Query
         schema(list) - a list of keys and BQ datatypes, can be derived from get_vessels_v2_members
-        test_name(str) - optional
         test_execute_start_time(datetime) - optional
 
     Returns:
@@ -121,21 +107,13 @@ def transform_response_for_loading(response, schema, test_name='', test_execute_
     # flatten the dictionaries and add to flats list
     flats: list = list()
     nodes: list = nl('nodes', response)
-    try:
-        node_list: list = nodes[0]
-    except IndexError as e:
-        logger.debug(f"Most likely this means there are no more pages\n{e}")
-        return flats
-
+    node_list: list = nodes[0]
     for unique_node in node_list:
 
         flat: dict = dict()
         v2_schema = [i[0] for i in schema]
         for key in v2_schema:
             flat.setdefault(key, '')
-        flat['row_insert_timestamp'] = "AUTO"
-        flat['test_execute_start_time'] = test_execute_start_time
-        flat['test_name'] = test_name
         flat['node_updateTimestamp'] = unique_node['updateTimestamp']
         flat['node_id'] = unique_node['id']
 
@@ -191,6 +169,42 @@ def transform_response_for_loading(response, schema, test_name='', test_execute_
                     flat['currentVoyage_updateTimestamp'] = v
                 elif k == 'timestamp':
                     flat['currentVoyage_timestamp'] = v
+                # elif k == 'matchedPort':
+                #     try:
+                #         flat['matchedPort_score'] = currentVoyage['matchedPort']['matchScore']
+                #     except (KeyError, TypeError):
+                #         logger.error(f"""
+                #                      matchedPort error
+                #
+                #                      {node}
+                #
+                #                      """)
+                #
+                #     port: dict = dict()
+                #     try:
+                #         port = currentVoyage['port']
+                #     except (KeyError, TypeError):
+                #         logger.error(f"""
+                #                      No port for matchedPort
+                #
+                #                      {node}
+                #
+                #                      """)
+                #     try:
+                #         centerPoint = port['centerPoint']
+                #         flat['matchedPort_name'] = centerPoint['mathedPort']['name']
+                #         flat['matchedPort_unlocode'] = centerPoint['matchedPort']['unlocode']
+                #         latitude = centerPoint['latitude']
+                #         longitude = centerPoint['longitude']
+                #         flat['matchedPort_lat'] = latitude
+                #         flat['matchedPort_long'] = longitude
+                #     except (KeyError, TypeError):
+                #         logger.error(f"""
+                #                      No centerPoint
+                #
+                #                      {node}
+                #
+                #                      """)
                 else:
                     if not v:
                         v = ''
@@ -203,21 +217,6 @@ def transform_response_for_loading(response, schema, test_name='', test_execute_
             pass
         flats.append(flat)
     return flats
-
-
-def get_settings():
-    """Reads the settings.yaml file and returns the variables and values
-
-    Returns
-        data(dict) - contains setting key, value pairs
-    """
-    with open('settings.yaml') as f:
-        data: dict = yaml.load(f, Loader=yaml.FullLoader)
-    return data
-
-
-def format_datetime(dt: datetime):
-    return dt.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
 
 def insert_into_query_header(query, insert_text=''):
@@ -241,109 +240,15 @@ def insert_into_query_header(query, insert_text=''):
         new_query = beginning + ' ' + insert_text + ' ) ' + end
     else:
         return query
-    return new_query.replace("'", '"')
-
-
-def get_csv_list_from_dir(directory):
-    """Get a list of files from directory
-
-    Args:
-        directory(str) - name of directory
-
-    Returns:
-        csvs(list) - list of files in directory
-    """
-    files = os.listdir(directory)
-    csvs: list = [file for file in files if '.csv' in file]
-    return csvs
-
-
-def write_list_to_csv(data: list, csv_columns, directory):
-    """ Write list of data to CSV
-
-    Args:
-        data(list) - list containing dictionaries to write
-        csv_columns(list) - list of column names
-        directory(str) - writes csv to this directory
-    """
-
-    fname: str = f'{datetime.utcnow()}.csv'
-    write_directory(directory)
-    full = directory + '/' + fname
-
-    try:
-        with open(full, 'a+') as f:
-            writer = csv.DictWriter(f, fieldnames=csv_columns)
-            writer.writeheader()
-            writer.writerows(data)
-    except FileNotFoundError as e:
-        logger.error(e)
-        raise
-
-
-def write_directory(dirname):
-    try:
-        os.mkdir(dirname)
-    except FileExistsError:
-        pass
-
-
-def write_to_file(data, file: str):
-    """Writes to a file
-
-    Args:
-        data(Any) - data to write to text file
-        file(str) - path and name of target files
-
-    Raises:
-        FileNotFoundError
-    """
-    try:
-        with open(file, 'a+') as f:
-            f.write(json.dumps(data, indent=4))
-    except FileNotFoundError as e:
-        logger.error(e)
-        raise
-
-
-def csv_to_dict(csv_file: str):
-    """
-    Takes a csv and returns a dict
-
-    Args:
-        csv_file(str) - file path and name for csv to read
-    Returns:
-        dict - dictionary representing csv
-    """
-    dict_from_csv: dict = dict()
-    try:
-        with open(csv_file, "r") as f:
-            dict_reader = csv.DictReader(f)
-            dict_list: list = list()
-            for line in dict_reader:
-                dict_list.append(line)
-    except FileNotFoundError as e:
-        logger.error(e)
-        raise
-    return dict_list
-
-
-def locate_file(filename):
-    root: str = ''
-    for root, dirs, files in os.walk('/'):
-        for file in files:
-            # change the extension from '.mp3' to
-            # the one of your choice.
-            if filename in file:
-                return root
-    return root
-
+    return new_query
 
 
 def pretty_string_dict(dictionary, with_empties=True):
     result: str = ''
     if not dictionary:
         return result
+    if type(dictionary) != dict:
+        return dictionary
     if with_empties:
         result = json.dumps(dictionary, indent=2)
     else:
@@ -353,4 +258,6 @@ def pretty_string_dict(dictionary, with_empties=True):
                 tmp_dict[k] = v
         result = json.dumps(tmp_dict, indent=2)
     return result
+
+
 

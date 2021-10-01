@@ -1,6 +1,11 @@
 # Spire customer / developer resource
 The code is intended for demonstration purposes for Spire customers and is in no way intended for production use
 
+The program can:
+- Save output to a text file.  See ```name_of_raw_output_file``` below
+- Save output to csv.  See ```name_of_csv_file ``` below
+- Save output to a GCP BigQuery table.  See the ```gcp_*``` settings below
+
 # Setup
 ## Python Environment
 1. Use a virtual environment, pipenv or other tool and enable the python environment
@@ -19,10 +24,15 @@ Edit the settings.yaml file
 |name_of_raw_output_file             |Name of raw output log. If blank, no log is produced|
 |name_of_csv_file                    |Name of csv file. If blank, no file is produced|
 |pages_to_process                    |Max number of pages to process.  A helpful setting for debugging.  If set to 0, all pages are processed|
-|test_name                           |Optional label that fills the csv column ```test_name```|
+|gcp_dataset_id     | Optional Google Cloud dataset for BQ  |
+|gcp_table_id       | Optional GCP table for BQ             |
+|gcp_project_id     | Optional GCP project for BQ           |
 
 **Note:**
 * Files are all assumed to be in the same directory as the program
+
+### BigQuery
+Each of the gcp settings **must** be present to save data to BigQuery
 
 ## Queries
 ### Important

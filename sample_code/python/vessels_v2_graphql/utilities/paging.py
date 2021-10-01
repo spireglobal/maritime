@@ -27,27 +27,25 @@ class Paging(object):
     def _should_stop_paging(self):
         # pageInfo.hasNextPage: false and pageInfo.endCursor: null
         endCursor, hasNextPage = self.get_pageInfo_elements()
-        logger.debug(f"Stop paging?  hasNextPage: {hasNextPage}, endCursor: {endCursor}")
-        if not endCursor:
+        #logger.debug(f"Stop paging?  hasNextPage: {hasNextPage}, endCursor: {endCursor}")
+        if endCursor or not hasNextPage:
+            return False
+        elif hasNextPage and endCursor:
             return True
-        elif endCursor and hasNextPage:
-            return False
-        else:
-            return False
 
     def get_response(self):
         return self._response
 
-    def page_and_get_response(self, client, query, hasNextPage=True):
+    def page_and_get_response(self, client, query):
         """
         Args:
             client: gql client
-            query(str): query string
-            hasNextPage(bool): optional - paging element, is there a next page
+            query: str query string
+            hasNextPage: bool optional - paging element, is there a next page
 
         Returns:
-            response(dict): service response to query
-            hasNextPage(bool): paging element, is there a next page
+            response: dict service response to query
+            hasNextPage: bool paging element, is there a next page
         """
         if not self._response:
             try:
@@ -62,20 +60,32 @@ class Paging(object):
         else:
             # there is more, so page
             endCursor, hasNextPage = self.get_pageInfo_elements()
-            insert_text = f'after: "{endCursor}" '
-
+            if endCursor:
+                insert_text = f'after: "{endCursor}" '
+            else:
+                hasNextPage = False
+                return self._response, hasNextPage
             query = helpers.insert_into_query_header(query=query, insert_text=insert_text)
             try:
                 self._response = client.execute(gql(query))
             except BaseException as e:
-                logger.warning(e)
+                # logger.warning(e)  do not really need this
                 self._response = False
 
             return self._response, hasNextPage
 
     def start_paging(self, client, query_text):
+        """
+
+        Args:
+            client: gql client
+            query_text:  query to execute
+
+        Returns:
+            Yields response (dict)
+
+        """
         page_count: int = 0
-        end_time = None
         responses: list = list()  # to help with error reporting of last response
         while True:
             response: dict = dict()
@@ -92,18 +102,26 @@ class Paging(object):
                 self._detailed_error(responses, page_count, hasNextPage)
                 assert False
             elif not hasNextPage and not response:
-                logger.info("DONE PAGING, the 'error' below is just information")
-                self._detailed_error(responses, page_count, hasNextPage)
-            elif response:
+                yield "DONE PAGING"
+            elif response and hasNextPage:
                 page_count += 1
                 logger.info(f"Page: {page_count}")
-                yield response, page_count
+                try:
+                    yield response
+                except ValueError as e:
+                    logger.error(f"""
+                    page_count: {page_count}
+                    response: {response}
+
+                    {e}
+                    """)
+                    raise
 
     def _detailed_error(self, responses, page, hasNextPage):
         if len(responses) > 4:
             responses.pop()  # control amount of RAM consumed
         previous = responses[len(responses) - 1]
-        pretty_previous = helpers.pretty_string_dict(previous, with_empties=False)
+        pretty_previous = helpers.pretty_string_dict(previous[0], with_empties=False)
         logger.error(f"""
         Paged #{page} pages
         Current hasNextPage value: {hasNextPage}

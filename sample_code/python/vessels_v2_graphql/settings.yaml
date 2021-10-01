@@ -4,5 +4,7 @@ name_of_gql_query_file: 'sample_1.txt'
 name_of_raw_output_file: 'raw.log'   # if set to "" no file will be produced
 name_of_csv_file: 'parsed.csv' # if set to "" no file will be produced
 pages_to_process: 5  # if 0, then all pages.  Otherwise this is used to limit the pages processed
-test_name: "demo"  # optional value to append in the csv file column test_name
+gcp_project_id: ''
+gcp_dataset_id: ''
+gcp_table_id: ''
 

@@ -2,8 +2,8 @@ import yaml
 import json
 import csv
 from loguru import logger
-from utilities import paging, helpers
-from gql import gql
+from utilities import paging, helpers, googleBigQueryTools
+from gql import gql, Client
 
 
 logger.add('demo_client.log', rotation="500 MB", retention="10 days", level='DEBUG')
@@ -74,13 +74,35 @@ def get_info():
     return info
 
 
-def run():
-    global pages_processed
+def write_to_bq(rows):
+    """
+    Args:
+        rows: list of dictionaries to be written
+        schema_members: list of fields for BQ table schema
+    """
+    schema_members = helpers.get_vessels_v2_members()
     settings = get_settings()
-    test_name = settings['test_name']
+    gcp_dataset_id = settings['gcp_dataset_id']
+    gcp_project_id = settings['gcp_project_id']
+    gcp_table_id = settings['gcp_table_id']
+    if not gcp_dataset_id or not gcp_project_id or not gcp_table_id:
+        return
+    bq = googleBigQueryTools.BQ(gcp_project_id=gcp_project_id,
+                                gcp_dataset_id=gcp_dataset_id,
+                                gcp_table_id=gcp_table_id,
+                                schema_members=schema_members)
+    bq.create_dataset()
+    bq.create_table()
+    bq.push_rows(rows)
+
+
+def run():
+    global pages_processed, rows_written_to_raw_log
+    settings = get_settings()
     pages_to_process = settings['pages_to_process']
     # make a client connection
-    client = helpers.get_gql_client()
+    client = helpers.get_gql_client(settings=settings)
+
     # read file
     query = read_query_file()
     if not "pageInfo" or not "endCursor" or not "hasNextPage" in query:
@@ -102,12 +124,13 @@ def run():
     hasNextPage: bool = False
     while True:
         response, hasNextPage = pg.page_and_get_response(client, query)
-        logger.debug(f"hasNextPage: {hasNextPage}")
         if response:
             write_raw(response)
-            csv_data = helpers.transform_response_for_loading(response=response, schema=schema_members, test_name=test_name)
-            if csv_data:
-                write_csv(csv_data)
+            rows_written_to_raw_log += 1
+            rows: list = helpers.transform_response_for_loading(response=response, schema=schema_members)
+            if rows:
+                write_to_bq(rows)
+                write_csv(rows)
                 pages_processed += 1
                 logger.info(f"Page: {pages_processed}")
                 if pages_to_process == 1:
