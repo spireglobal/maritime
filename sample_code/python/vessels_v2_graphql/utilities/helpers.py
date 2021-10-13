@@ -117,12 +117,17 @@ def transform_response_for_loading(response, schema, test_execute_start_time=Non
         flat['node_updateTimestamp'] = unique_node['updateTimestamp']
         flat['node_id'] = unique_node['id']
 
-        # handle odd dimensions bug
-        dimensions: dict = unique_node['staticData']['dimensions']
-        for key, value in dimensions.items():
-            if not value:
-                value = ''
-            flat[key] = value
+        dimensions: dict = dict()
+        try:
+            dimensions = unique_node['staticData']['dimensions']
+        except KeyError:
+            pass  # handle with check for value below
+
+        if dimensions:
+            for key, value in dimensions.items():
+                if not value:
+                    value = ''
+                flat[key] = value
 
         # vessel in node
         vessel: dict = unique_node['staticData']

@@ -67,10 +67,20 @@ def write_csv(data: dict):
 
 
 def get_info():
-    info = f"""
-            TOTAL PAGES WRITTEN TO RAW LOG: {rows_written_to_raw_log}
-            TOTAL ROWS WRITTEN TO CSV: {rows_written_to_csv}
-            TOTAL PAGES PROCESSED: {pages_processed}"""
+    info: str = ''
+    settings = get_settings()
+    raw_log_path: str = ''
+    csv_path: str = ''
+    try:
+        raw_log_path = settings['name_of_raw_output_file']
+        csv_path = settings['name_of_csv_file']
+    except KeyError:
+        pass  # handle below
+    if raw_log_path:
+        info += f'TOTAL PAGES WRITTEN TO RAW LOG: {rows_written_to_raw_log}\n'
+    if csv_path:
+        info += f'TOTAL ROWS WRITTEN TO CSV: {rows_written_to_csv}'
+    info += f'TOTAL PAGES PROCESSED: {pages_processed}'
     return info
 
 
@@ -82,9 +92,16 @@ def write_to_bq(rows):
     """
     schema_members = helpers.get_vessels_v2_members()
     settings = get_settings()
-    gcp_dataset_id = settings['gcp_dataset_id']
-    gcp_project_id = settings['gcp_project_id']
-    gcp_table_id = settings['gcp_table_id']
+
+    gcp_dataset_id: str = ''
+    gcp_project_id: str = ''
+    gcp_table_id: str = ''
+    try:
+        gcp_dataset_id = settings['gcp_dataset_id']
+        gcp_project_id = settings['gcp_project_id']
+        gcp_table_id = settings['gcp_table_id']
+    except KeyError:
+        pass  # check for the values below
     if not gcp_dataset_id or not gcp_project_id or not gcp_table_id:
         return
     bq = googleBigQueryTools.BQ(gcp_project_id=gcp_project_id,
