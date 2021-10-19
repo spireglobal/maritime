@@ -49,6 +49,17 @@ query {
         eta
         timestamp
         updateTimestamp
+        matchedPort{
+          matchScore
+          port{
+            name
+            unlocode
+            centerPoint{
+              latitude
+              longitude
+            }
+          }
+        }
       }
     }
   }

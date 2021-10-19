@@ -83,6 +83,11 @@ def get_vessels_v2_members():
         ('collectionType', 'string'),
         ('currentVoyage_updateTimestamp', "STRING"),
         ('currentVoyage_timestamp', "STRING"),
+        ('matchedPort_matchScore', 'STRING'),
+        ('port_name', 'STRING'),
+        ('port_unlocode', 'STRING'),
+        ('port_latitude','STRING'),
+        ('port_longitude', 'STRING'),
         ('draught', 'string'),
         ('eta', 'string'),
         ('destination', 'string'),
@@ -174,42 +179,35 @@ def transform_response_for_loading(response, schema, test_execute_start_time=Non
                     flat['currentVoyage_updateTimestamp'] = v
                 elif k == 'timestamp':
                     flat['currentVoyage_timestamp'] = v
-                # elif k == 'matchedPort':
-                #     try:
-                #         flat['matchedPort_score'] = currentVoyage['matchedPort']['matchScore']
-                #     except (KeyError, TypeError):
-                #         logger.error(f"""
-                #                      matchedPort error
-                #
-                #                      {node}
-                #
-                #                      """)
-                #
-                #     port: dict = dict()
-                #     try:
-                #         port = currentVoyage['port']
-                #     except (KeyError, TypeError):
-                #         logger.error(f"""
-                #                      No port for matchedPort
-                #
-                #                      {node}
-                #
-                #                      """)
-                #     try:
-                #         centerPoint = port['centerPoint']
-                #         flat['matchedPort_name'] = centerPoint['mathedPort']['name']
-                #         flat['matchedPort_unlocode'] = centerPoint['matchedPort']['unlocode']
-                #         latitude = centerPoint['latitude']
-                #         longitude = centerPoint['longitude']
-                #         flat['matchedPort_lat'] = latitude
-                #         flat['matchedPort_long'] = longitude
-                #     except (KeyError, TypeError):
-                #         logger.error(f"""
-                #                      No centerPoint
-                #
-                #                      {node}
-                #
-                #                      """)
+                elif k == 'matchedPort':
+                    try:
+                        flat['matchedPort_matchScore'] = currentVoyage['matchedPort']['matchScore']
+                    except (KeyError, TypeError):
+                        logger.error(f"""
+                                     matchedPort error
+
+                                     {node}
+
+                                     """)
+
+                    port: dict = dict()
+                    try:
+                        port = currentVoyage['port']
+                    except (KeyError, TypeError):
+                        continue
+                    centerPoint: dict = dict()
+                    try:
+                        centerPoint = port['centerPoint']
+
+                    except (KeyError, TypeError):
+                        continue
+                    if centerPoint:
+                        flat['port_name'] = centerPoint['matchedPort']['name']
+                        flat['port_unlocode'] = centerPoint['matchedPort']['unlocode']
+                        latitude = centerPoint['latitude']
+                        longitude = centerPoint['longitude']
+                        flat['matchedPort_latitude'] = latitude
+                        flat['matchedPort_long'] = longitude
                 else:
                     if not v:
                         v = ''
