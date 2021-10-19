@@ -183,12 +183,7 @@ def transform_response_for_loading(response, schema, test_execute_start_time=Non
                     try:
                         flat['matchedPort_matchScore'] = currentVoyage['matchedPort']['matchScore']
                     except (KeyError, TypeError):
-                        logger.error(f"""
-                                     matchedPort error
-
-                                     {node}
-
-                                     """)
+                        continue
 
                     port: dict = dict()
                     try:

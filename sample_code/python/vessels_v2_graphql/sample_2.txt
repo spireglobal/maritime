@@ -2,7 +2,6 @@ query {
   vessels(mmsi: [235108346, 413790326, 241229000], first: 1000) {
      pageInfo {
       hasNextPage
-      correlationId
       endCursor
     }
     nodes {

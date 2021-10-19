@@ -53,7 +53,7 @@ def write_csv(data: dict):
     try:
         with open(name_of_csv_file, 'a+') as f:
             writer = csv.DictWriter(f, fieldnames=csv_columns)
-            logger.debug(f"WROTE HEADER: {wrote_csv_header}")
+            # logger.debug(f"WROTE HEADER: {wrote_csv_header}")
             if not wrote_csv_header:
                 writer.writeheader()
                 wrote_csv_header = True
@@ -79,7 +79,7 @@ def get_info():
     if raw_log_path:
         info += f'TOTAL PAGES WRITTEN TO RAW LOG: {rows_written_to_raw_log}\n'
     if csv_path:
-        info += f'TOTAL ROWS WRITTEN TO CSV: {rows_written_to_csv}'
+        info += f'TOTAL ROWS WRITTEN TO CSV: {rows_written_to_csv}\n'
     info += f'TOTAL PAGES PROCESSED: {pages_processed}'
     return info
 

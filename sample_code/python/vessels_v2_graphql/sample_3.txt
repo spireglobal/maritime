@@ -17,7 +17,6 @@ query {
   ) {
     pageInfo {
       hasNextPage
-      correlationId
       endCursor
     }
     nodes {

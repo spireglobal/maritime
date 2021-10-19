@@ -2,7 +2,6 @@ query {
   vessels {
     pageInfo {
       hasNextPage
-      correlationId
       endCursor
     }
     nodes {
