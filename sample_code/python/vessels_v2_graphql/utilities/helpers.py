@@ -211,6 +211,7 @@ def transform_response_for_loading(response, schema, test_execute_start_time=Non
             # in case somehow these got into the dictionary
             del flat['dimensions']
             del flat['currentVoyage']
+            del flat['matchedPort']
         except KeyError:
             pass
         flats.append(flat)
