@@ -1,9 +1,10 @@
-endpoint: 'https://api.spire.com/graphql'
-token: ''
-name_of_gql_query_file: 'sample_1.txt'
+#endpoint: 'https://api.spire.com/graphql'
+endpoint: 'https://api.staging.maritime.spire.sh/graphql/canary'
+token: 'k6qLvUxATNeqOJw957NhYhfr6iIQCfWX'
+name_of_gql_query_file: 'extended_vessel_characteristics.txt'
 name_of_raw_output_file: 'raw.log'   # if set to "" no file will be produced
 name_of_csv_file: 'parsed.csv' # if set to "" no file will be produced
-pages_to_process: 5  # if 0, then all pages.  Otherwise this is used to limit the pages processed
+pages_to_process: 2  # if 0, then all pages.  Otherwise this is used to limit the pages processed
 gcp_project_id: ''
 gcp_dataset_id: ''
 gcp_table_id: ''

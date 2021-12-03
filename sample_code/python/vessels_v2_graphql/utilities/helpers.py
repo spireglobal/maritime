@@ -6,6 +6,7 @@ from gql import Client
 from gql.transport.requests import RequestsHTTPTransport
 from requests import exceptions
 
+
 def get_gql_client(settings):
     """ Establishes a gql client
 
@@ -38,72 +39,51 @@ def get_gql_client(settings):
 
 
 def get_vessels_v2_members():
-    """ Get a list of column names and the data types
-
-    Returns:
-
-        A list of column names and BigQuery data types
-
-    These are added to support saving data that might be captured by a test
-        'test_execute_start_time'
-        'test_name'
-    They can be null / empty string
-    """
 
     return (
-        ('node_updateTimestamp', "STRING"),
-        ('node_id', "STRING"),
-        ('staticData_updateTimestamp', "STRING"),
-        ('staticData_timestamp', "STRING"),
-        ('mmsi', "string"),
-        ('imo', 'string'),
-        ('name', 'string'),
-        ('callsign', 'string'),
-        ('shipType', 'string'),
-        ('shipSubType', 'STRING'),
-        ('aisClass', 'string'),
-        ('flag', 'string'),
-        ('length', 'string'),
-        ('width', 'string'),
-        ('a', 'string'),
-        ('b', 'string'),
-        ('c', 'string'),
-        ('d', 'string'),
-        ('lastPositionUpdate_updateTimestamp', "STRING"),
-        ('lastPositionUpdate_timestamp', "STRING"),
-        ('latitude', 'string'),
-        ('longitude', 'string'),
-        ('heading', 'string'),
-        ('speed', 'string'),
-        ('rot', 'string'),
-        ('accuracy', 'string'),
-        ('maneuver', 'string'),
-        ('course', 'string'),
-        ('navigationalStatus', 'string'),
-        ('collectionType', 'string'),
-        ('currentVoyage_updateTimestamp', "STRING"),
-        ('currentVoyage_timestamp', "STRING"),
-        ('matchedPort_matchScore', 'STRING'),
-        ('port_name', 'STRING'),
-        ('port_unlocode', 'STRING'),
-        ('port_latitude','STRING'),
-        ('port_longitude', 'STRING'),
-        ('draught', 'string'),
-        ('eta', 'string'),
-        ('destination', 'string'),
+               'node_updateTimestamp',
+               'node_id',
+        'staticData_updateTimestamp',
+        'staticData_timestamp',
+        'mmsi',
+        'imo',
+        'name',
+        'callsign',
+        'shipType',
+        'shipSubType',
+        'aisClass',
+        'flag',
+        'length',
+        'width',
+        'a',
+        'b',
+        'c',
+        'd',
+        'lastPositionUpdate_updateTimestamp',
+        'lastPositionUpdate_timestamp',
+        'latitude',
+        'longitude',
+        'heading',
+        'speed',
+        'rot',
+        'accuracy',
+        'maneuver',
+        'course',
+        'navigationalStatus',
+        'collectionType',
+        'currentVoyage_updateTimestamp',
+        'currentVoyage_timestamp',
+        'matchedPort_matchScore',
+        'port_name',
+        'port_unlocode',
+        'port_latitude',
+        'port_longitude',
+        'draught',
+        'eta',
+        'destination',
     )
 
 
-def get_vessel_characteristics_basic():
-    return (
-        ('deadweight', 'string'),
-        ('netTonnage', 'string'),
-
-    )
-
-
-def get_vessel_characteristics_extended():
-    return()
 
 
 def transform_response_for_loading(response, schema, test_execute_start_time=None):
@@ -128,7 +108,7 @@ def transform_response_for_loading(response, schema, test_execute_start_time=Non
     for unique_node in node_list:
 
         flat: dict = dict()
-        v2_schema = [i[0] for i in schema]
+        v2_schema = [i[0] for i in schema] # it is now a list of single items, treat it that way
         for key in v2_schema:
             flat.setdefault(key, '')
         flat['node_updateTimestamp'] = unique_node['updateTimestamp']

@@ -2,9 +2,11 @@ import yaml
 import json
 import csv
 from loguru import logger
-from utilities import paging, helpers, googleBigQueryTools
-from gql import gql, Client
-
+from utilities import helpers, googleBigQueryTools
+from gql import gql
+from nested_lookup import nested_lookup as nl
+from nested_lookup import get_all_keys
+from flatten_dict import flatten
 
 logger.add('demo_client.log', rotation="500 MB", retention="10 days", level='DEBUG')
 
@@ -46,10 +48,8 @@ def write_csv(data: dict):
     name_of_csv_file = settings['name_of_csv_file']
     if not name_of_csv_file:
         return
-
-    members = helpers.get_vessels_v2_members()
-    # get just the keys
-    csv_columns: list = [i[0] for i in members]
+    flat: dict = flatten(data, reducer='dot')
+    csv_columns = get_all_keys(flat)
     try:
         with open(name_of_csv_file, 'a+') as f:
             writer = csv.DictWriter(f, fieldnames=csv_columns)
@@ -57,10 +57,8 @@ def write_csv(data: dict):
             if not wrote_csv_header:
                 writer.writeheader()
                 wrote_csv_header = True
-            item: dict
-            for item in data:
-                writer.writerow(item)
-                rows_written_to_csv += 1
+            writer.writerow(flat)
+            rows_written_to_csv += 1
     except Exception:
         raise
 
@@ -76,11 +74,10 @@ def get_info():
         csv_path = settings['name_of_csv_file']
     except KeyError:
         pass  # handle below
+    info += f'TOTAL PAGES PROCESSED: {pages_processed}'
     if raw_log_path:
         info += f'TOTAL PAGES WRITTEN TO RAW LOG: {rows_written_to_raw_log}\n'
-    if csv_path:
-        info += f'TOTAL ROWS WRITTEN TO CSV: {rows_written_to_csv}\n'
-    info += f'TOTAL PAGES PROCESSED: {pages_processed}'
+
     return info
 
 
@@ -125,52 +122,37 @@ def run():
     if not "pageInfo" or not "endCursor" or not "hasNextPage" in query:
         logger.error("Please include pageInfo in the query, it is required for paging.  See the README.md")
         return
-    response: dict = dict()
-    try:
-        response = client.execute(gql(query))
-    except BaseException as e:
-        logger.error(e)
-        raise
-    if response:
-        # initialize paging
-        pg = paging.Paging(response=response)
-        schema_members = helpers.get_vessels_v2_members()
+    while True:
+        query = read_query_file()
+        if not "pageInfo" or not "endCursor" or not "hasNextPage" in query:
+            logger.error("Please include pageInfo in the query, it is required for paging.  See the README.md")
+            return
+        response: dict = dict()
+        try:
+            response = client.execute(gql(query))
+        except (ValueError, IndexError):
+            raise
+        pages_processed += 1
+        if pages_processed >= pages_to_process:
+            break
+        cursor: str = ''
+        try:
+            cursor = nl('endCursor', response)[0]
+        except (ValueError, IndexError):
+            raise
+        if response:
+            nodes: list = nl('nodes', response)[0]
+            for data in nodes:
+                write_csv(data=data)
+                write_raw(data=data)
+        if not cursor:
+            break
 
-        # page, write, util complete
-        logger.info("Paging started")
-        hasNextPage: bool = False
-        while True:
-            response, hasNextPage = pg.page_and_get_response(client, query)
-            if response:
-                write_raw(response)
-                rows_written_to_raw_log += 1
-                rows: list = helpers.transform_response_for_loading(response=response, schema=schema_members)
-                if rows:
-                    write_to_bq(rows)
-                    write_csv(rows)
-                    pages_processed += 1
-                    logger.info(f"Page: {pages_processed}")
-                    if pages_to_process == 1:
-                        break
-                    elif pages_to_process:
-                        if not hasNextPage or not response:
-                            break
-                        if pages_processed >= pages_to_process:
-                            break
-                    elif not hasNextPage or not response:
-                        break
-                else:
-                    logger.info("Did not get data for csv, either because there are no more pages, or did not get a response")
-                    break
-            else:
-                logger.info("No response or no more responses")
-                break
-            logger.info(get_info())
 
-    else:
-        logger.error('No response from the service')
+
 
 
 if __name__ == '__main__':
     run()
+    logger.info(get_info())
     logger.info("Done")

@@ -37,12 +37,13 @@ Each of the gcp settings **must** be present to save data to BigQuery
 ## Queries
 ### Important
 * As a demo, this client **requires** each query to include a section to request ```pageInfo```.
+* If your license allows access to only basic Vessel Characteristics and the query contains extended characteristics, an error will occur
 * Every query must contain the following:
 
 ```json
 pageInfo{
-  endCursor: String
-  hasNextPage: Boolean!
+  endCursor
+  hasNextPage
 }
 ```
 
