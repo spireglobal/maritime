@@ -2,7 +2,6 @@ import yaml
 import json
 import csv
 from loguru import logger
-from utilities import helpers, googleBigQueryTools
 from gql import gql
 from nested_lookup import nested_lookup as nl
 from nested_lookup import get_all_keys
@@ -14,6 +13,7 @@ rows_written_to_raw_log: int = 0
 rows_written_to_csv: int = 0
 pages_processed: int = 0
 wrote_csv_header = False
+columns: list = list()
 
 
 def get_settings():
@@ -43,16 +43,16 @@ def write_raw(data: dict):
 
 
 def write_csv(data: dict):
-    global rows_written_to_csv, wrote_csv_header
+    global rows_written_to_csv, wrote_csv_header, columns
     settings = get_settings()
     name_of_csv_file = settings['name_of_csv_file']
     if not name_of_csv_file:
         return
     flat: dict = flatten(data, reducer='dot')
-    csv_columns = get_all_keys(flat)
+    columns = get_all_keys(flat)
     try:
         with open(name_of_csv_file, 'a+') as f:
-            writer = csv.DictWriter(f, fieldnames=csv_columns)
+            writer = csv.DictWriter(f, fieldnames=columns)
             # logger.debug(f"WROTE HEADER: {wrote_csv_header}")
             if not wrote_csv_header:
                 writer.writeheader()
@@ -71,43 +71,42 @@ def get_info():
     csv_path: str = ''
     try:
         raw_log_path = settings['name_of_raw_output_file']
-        csv_path = settings['name_of_csv_file']
     except KeyError:
         pass  # handle below
-    info += f'TOTAL PAGES PROCESSED: {pages_processed}'
+    info += f'\nTOTAL PAGES PROCESSED: {pages_processed}'
     if raw_log_path:
-        info += f'TOTAL PAGES WRITTEN TO RAW LOG: {rows_written_to_raw_log}\n'
+        info += f'\nTOTAL PAGES WRITTEN TO RAW LOG: {rows_written_to_raw_log}'
 
     return info
 
 
-def write_to_bq(rows):
-    """
-    Args:
-        rows: list of dictionaries to be written
-        schema_members: list of fields for BQ table schema
-    """
-    schema_members = helpers.get_vessels_v2_members()
-    settings = get_settings()
-
-    gcp_dataset_id: str = ''
-    gcp_project_id: str = ''
-    gcp_table_id: str = ''
-    try:
-        gcp_dataset_id = settings['gcp_dataset_id']
-        gcp_project_id = settings['gcp_project_id']
-        gcp_table_id = settings['gcp_table_id']
-    except KeyError:
-        pass  # check for the values below
-    if not gcp_dataset_id or not gcp_project_id or not gcp_table_id:
-        return
-    bq = googleBigQueryTools.BQ(gcp_project_id=gcp_project_id,
-                                gcp_dataset_id=gcp_dataset_id,
-                                gcp_table_id=gcp_table_id,
-                                schema_members=schema_members)
-    bq.create_dataset()
-    bq.create_table()
-    bq.push_rows(rows)
+# def write_to_bq(data: dict):
+#     settings = get_settings()
+#     gcp_dataset_id: str = ''
+#     gcp_project_id: str = ''
+#     gcp_table_id: str = ''
+#     try:
+#         gcp_dataset_id = settings['gcp_dataset_id']
+#         gcp_project_id = settings['gcp_project_id']
+#         gcp_table_id = settings['gcp_table_id']
+#     except KeyError:
+#         pass  # check for the values below
+#     if not gcp_dataset_id or not gcp_project_id or not gcp_table_id:
+#         return
+#     # build schema members
+#     schema_members: list = list()
+#     for column in columns:
+#         tmp = (column, 'STRING')
+#         schema_members.append(tmp)
+#
+#     bq = googleBigQueryTools.BQ(gcp_project_id=gcp_project_id,
+#                                 gcp_dataset_id=gcp_dataset_id,
+#                                 gcp_table_id=gcp_table_id,
+#                                 schema_members=schema_members)
+#     bq.create_dataset()
+#     bq.create_table()
+#     rows = list(data)
+#     bq.push_rows(rows)
 
 
 def run():
