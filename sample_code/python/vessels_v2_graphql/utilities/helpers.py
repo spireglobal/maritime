@@ -94,6 +94,18 @@ def get_vessels_v2_members():
     )
 
 
+def get_vessel_characteristics_basic():
+    return (
+        ('deadweight', 'string'),
+        ('netTonnage', 'string'),
+
+    )
+
+
+def get_vessel_characteristics_extended():
+    return()
+
+
 def transform_response_for_loading(response, schema, test_execute_start_time=None):
     """Flattens complex response dictionary
     Args:
