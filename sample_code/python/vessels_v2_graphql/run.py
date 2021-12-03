@@ -6,6 +6,7 @@ from gql import gql
 from nested_lookup import nested_lookup as nl
 from nested_lookup import get_all_keys
 from flatten_dict import flatten
+from utilities import helpers
 
 logger.add('demo_client.log', rotation="500 MB", retention="10 days", level='DEBUG')
 
