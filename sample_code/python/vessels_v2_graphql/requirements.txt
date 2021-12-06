@@ -2,3 +2,4 @@ gql>=2.0.0
 PyYAML>=5.4.1
 loguru
 nested_lookup
+flatten_dict
