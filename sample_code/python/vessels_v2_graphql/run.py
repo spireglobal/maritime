@@ -132,8 +132,12 @@ def run():
             response = client.execute(gql(query))
         except (ValueError, IndexError):
             raise
+        except Exception as e:
+            logger.error(e)
+            raise
         pages_processed += 1
-        if pages_processed >= pages_to_process:
+        print(pages_processed)
+        if pages_to_process and pages_processed >= pages_to_process:  # TODO THIS IS A BUG THAT NEEDS FIXING IN MAIN
             break
         cursor: str = ''
         try:
@@ -153,6 +157,9 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+    try:
+        run()
+    except Exception as e:
+        logger.error(e)
     logger.info(get_info())
     logger.info("Done")
