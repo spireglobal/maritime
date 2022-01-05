@@ -1,0 +1,79 @@
+query {
+  vessels {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    nodes {
+      id
+      updateTimestamp
+      staticData {
+        aisClass
+        flag
+        name
+        callsign
+        timestamp
+        updateTimestamp
+        shipType
+        shipSubType
+        mmsi
+        imo
+        callsign
+        dimensions {
+          a
+          b
+          c
+          d
+          width
+          length
+        }
+      }
+      lastPositionUpdate {
+        accuracy
+        collectionType
+        course
+        heading
+        latitude
+        longitude
+        maneuver
+        navigationalStatus
+        rot
+        speed
+        timestamp
+        updateTimestamp
+      }
+      currentVoyage {
+        destination
+        draught
+        eta
+        timestamp
+        updateTimestamp
+        matchedPort {
+          matchScore
+          port {
+            name
+            unlocode
+            centerPoint {
+              latitude
+              longitude
+            }
+          }
+        }
+      }
+      characteristics{
+        basic{
+          capacity{
+            deadweight
+            netTonnage
+          }
+          history{
+            builtYear
+          }
+          vesselTypeAndTrading{
+            vesselSubtype
+          }
+        }
+      }
+    }
+  }
+}
