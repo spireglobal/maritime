@@ -1,0 +1,167 @@
+query {
+  vessels {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    nodes {
+      id
+      updateTimestamp
+      staticData {
+        aisClass
+        flag
+        name
+        callsign
+        timestamp
+        updateTimestamp
+        shipType
+        shipSubType
+        mmsi
+        imo
+        callsign
+        dimensions {
+          a
+          b
+          c
+          d
+          width
+          length
+        }
+      }
+      lastPositionUpdate {
+        accuracy
+        collectionType
+        course
+        heading
+        latitude
+        longitude
+        maneuver
+        navigationalStatus
+        rot
+        speed
+        timestamp
+        updateTimestamp
+      }
+      currentVoyage {
+        destination
+        draught
+        eta
+        timestamp
+        updateTimestamp
+        matchedPort {
+          matchScore
+          port {
+            name
+            unlocode
+            centerPoint {
+              latitude
+              longitude
+            }
+          }
+        }
+      }
+      characteristics {
+        basic {
+          capacity {
+            deadweight
+            netTonnage
+          }
+          history {
+            builtYear
+          }
+          vesselTypeAndTrading {
+            vesselSubtype
+          }
+        }
+        extended {
+          history {
+            deadYear
+            builtYear
+            launchYear
+            keelLaidYear
+            vesselNameDate
+            hullNumber
+            shipBuilder
+            registeredOwner
+          }
+          capacity {
+            cars
+            deadweight
+            netTonnage
+            hatchCount
+            holdCount
+            holdDimensions
+            hatchDimensions
+            laneMeters
+            passengers
+            grossTonnage
+            displacement
+            grainCubicCapacity
+            reeferCubic
+            liquidCubic98Percent
+            cars
+            tpcmi
+            reeferCubic
+            liquidCubic98Percent
+            teu
+            feu
+            teu14t
+            teuSurplus
+            tpcmi
+          }
+          registration {
+            iceClass
+            class1Code
+            class2Code
+            classDetails
+            isIceClassed
+            certificates
+          }
+          design {
+            isCoated
+            isGearless
+            gearMaxSwl
+            gearDisplay
+            isSelfUnloading
+            reeferPointCount
+          }
+          dimensions {
+            airDraught
+            draught
+            beamMoulded
+            lengthOverall
+            keelToManifold
+            berthCount
+            depth
+          }
+          bunker {
+            bunkers {
+              capacity
+              tankCount
+              fuelTypeCode
+              fuelUnitCode
+            }
+          }
+          vesselTypeAndTrading {
+            tradingStatusCode
+            tradingCategoryCode
+            vesselSubtype
+          }
+          propulsion {
+            mainEngineCount
+            engineDesignation
+            mainEngineDesigner
+            bowThrusterCount
+            mcoKw
+            mcoHp
+            mcoRpm
+            propellerCount
+            sternThrusterCount
+            propellerType
+            propulsionType
+          }
+        }
+      }
+    }
+  }
+}
