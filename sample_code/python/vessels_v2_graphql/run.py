@@ -111,7 +111,10 @@ def run():
         logger.info("Paging started")
         hasNextPage: bool = False
         while True:
-            response, hasNextPage = pg.page_and_get_response(client, query)
+            try:
+                response, hasNextPage = pg.page_and_get_response(client, query)
+            except Exception as e:
+                print(e)
             if response:
                 write_raw(response)
                 rows_written_to_raw_log += 1
