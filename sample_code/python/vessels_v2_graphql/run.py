@@ -131,41 +131,45 @@ def run():
     except BaseException as e:
         logger.error(e)
         raise
+    if response:
+        # initialize paging
+        pg = paging.Paging(response=response)
+        schema_members = helpers.get_vessels_v2_members()
 
-    # initialize paging
-    pg = paging.Paging(response=response)
-    schema_members = helpers.get_vessels_v2_members()
-
-    # page, write, util complete
-    logger.info("Paging started")
-    hasNextPage: bool = False
-    while True:
-        response, hasNextPage = pg.page_and_get_response(client, query)
-        if response:
-            write_raw(response)
-            rows_written_to_raw_log += 1
-            rows: list = helpers.transform_response_for_loading(response=response, schema=schema_members)
-            if rows:
-                write_to_bq(rows)
-                write_csv(rows)
-                pages_processed += 1
-                logger.info(f"Page: {pages_processed}")
-                if pages_to_process == 1:
-                    break
-                elif pages_to_process:
-                    if not hasNextPage or not response:
+        # page, write, util complete
+        logger.info("Paging started")
+        hasNextPage: bool = False
+        while True:
+            response, hasNextPage = pg.page_and_get_response(client, query)
+            if response:
+                write_raw(response)
+                rows_written_to_raw_log += 1
+                rows: list = helpers.transform_response_for_loading(response=response, schema=schema_members)
+                if rows:
+                    write_to_bq(rows)
+                    write_csv(rows)
+                    pages_processed += 1
+                    logger.info(f"Page: {pages_processed}")
+                    if pages_to_process == 1:
                         break
-                    if pages_processed >= pages_to_process:
+                    elif pages_to_process:
+                        if not hasNextPage or not response:
+                            break
+                        if pages_processed >= pages_to_process:
+                            break
+                    elif not hasNextPage or not response:
                         break
-                elif not hasNextPage or not response:
+                else:
+                    logger.info(
+                        "Did not get data for csv, either because there are no more pages, or did not get a response")
                     break
             else:
-                logger.info("Did not get data for csv, either because there are no more pages, or did not get a response")
+                logger.info("No response or no more responses")
                 break
-        else:
-            logger.info("No response or no more responses")
-            break
-        logger.info(get_info())
+            logger.info(get_info())
+
+    else:
+        logger.error('No response from the service')
 
 
 if __name__ == '__main__':
