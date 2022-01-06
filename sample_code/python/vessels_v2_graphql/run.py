@@ -4,6 +4,9 @@ import csv
 from loguru import logger
 from utilities import paging, helpers
 from gql import gql
+from nested_lookup import nested_lookup as nl
+from nested_lookup import get_all_keys
+from flatten_dict import flatten
 
 
 logger.add('demo_client.log', rotation="500 MB", retention="10 days", level='DEBUG')
@@ -46,10 +49,8 @@ def write_csv(data: dict):
     name_of_csv_file = settings['name_of_csv_file']
     if not name_of_csv_file:
         return
-
-    members = helpers.get_vessels_v2_members()
-    # get just the keys
-    csv_columns: list = [i[0] for i in members]
+    flat: dict = flatten(data, reducer='dot')
+    csv_columns = get_all_keys(flat)
     try:
         with open(name_of_csv_file, 'a+') as f:
             writer = csv.DictWriter(f, fieldnames=csv_columns)
@@ -57,10 +58,8 @@ def write_csv(data: dict):
             if not wrote_csv_header:
                 writer.writeheader()
                 wrote_csv_header = True
-            item: dict
-            for item in data:
-                writer.writerow(item)
-                rows_written_to_csv += 1
+            writer.writerow(flat)
+            rows_written_to_csv += 1
     except Exception:
         raise
 
