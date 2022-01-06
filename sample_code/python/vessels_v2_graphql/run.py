@@ -4,15 +4,12 @@ import csv
 from loguru import logger
 from utilities import paging, helpers
 from gql import gql
-from nested_lookup import nested_lookup as nl
-from nested_lookup import get_all_keys
+from nested_lookup import get_all_keys, nested_lookup
 from flatten_dict import flatten
 
 
 logger.add('demo_client.log', rotation="500 MB", retention="10 days", level='DEBUG')
 
-rows_written_to_raw_log: int = 0
-rows_written_to_csv: int = 0
 pages_processed: int = 0
 wrote_csv_header = False
 
@@ -49,36 +46,27 @@ def write_csv(data: dict):
     name_of_csv_file = settings['name_of_csv_file']
     if not name_of_csv_file:
         return
-    flat: dict = flatten(data, reducer='dot')
-    csv_columns = get_all_keys(flat)
-    try:
-        with open(name_of_csv_file, 'a+') as f:
-            writer = csv.DictWriter(f, fieldnames=csv_columns)
-            # logger.debug(f"WROTE HEADER: {wrote_csv_header}")
-            if not wrote_csv_header:
-                writer.writeheader()
-                wrote_csv_header = True
-            writer.writerow(flat)
-            rows_written_to_csv += 1
-    except Exception:
-        raise
+    # get dict nodes
+    nodes: list = nested_lookup('nodes', data)
+    for node_list in nodes:
+        for node in node_list:
+            flat: dict = flatten(node, reducer='dot')
+            csv_columns = get_all_keys(flat)
+            try:
+                with open(name_of_csv_file, 'a+') as f:
+                    writer = csv.DictWriter(f, fieldnames=csv_columns)
+                    # logger.debug(f"WROTE HEADER: {wrote_csv_header}")
+                    if not wrote_csv_header:
+                        writer.writeheader()
+                        wrote_csv_header = True
+                    writer.writerow(flat)
+            except Exception:
+                raise
 
 
 
 def get_info():
     info: str = ''
-    settings = get_settings()
-    raw_log_path: str = ''
-    csv_path: str = ''
-    try:
-        raw_log_path = settings['name_of_raw_output_file']
-        csv_path = settings['name_of_csv_file']
-    except KeyError:
-        pass  # handle below
-    if raw_log_path:
-        info += f'TOTAL PAGES WRITTEN TO RAW LOG: {rows_written_to_raw_log}\n'
-    if csv_path:
-        info += f'TOTAL ROWS WRITTEN TO CSV: {rows_written_to_csv}\n'
     info += f'TOTAL PAGES PROCESSED: {pages_processed}'
     return info
 
@@ -113,29 +101,23 @@ def run():
             response, hasNextPage = pg.page_and_get_response(client, query)
             if response:
                 write_raw(response)
-                rows_written_to_raw_log += 1
-                rows: list = helpers.transform_response_for_loading(response=response, schema=schema_members)
-                if rows:
-                    write_csv(rows)
-                    pages_processed += 1
-                    logger.info(f"Page: {pages_processed}")
-                    if pages_to_process == 1:
+                write_csv(response)
+                pages_processed += 1
+                #     logger.info(f"Page: {pages_processed}")
+                logger.info(get_info())
+                if pages_to_process == 1:
+                    break
+                elif pages_to_process:
+                    if not hasNextPage or not response:
                         break
-                    elif pages_to_process:
-                        if not hasNextPage or not response:
-                            break
-                        if pages_processed >= pages_to_process:
-                            break
-                    elif not hasNextPage or not response:
+                    if pages_processed >= pages_to_process:
                         break
-                else:
-                    logger.info(
-                        "Did not get data for csv, either because there are no more pages, or did not get a response")
+                elif not hasNextPage or not response:
                     break
             else:
-                logger.info("No response or no more responses")
+                logger.info(
+                    "Did not get data for csv, either because there are no more pages, or did not get a response")
                 break
-            logger.info(get_info())
 
     else:
         logger.error('No response from the service')
