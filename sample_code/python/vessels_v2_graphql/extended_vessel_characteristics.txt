@@ -64,7 +64,6 @@ query {
         basic {
           capacity {
             deadweight
-            netTonnage
           }
           history {
             builtYear
@@ -87,7 +86,6 @@ query {
           capacity {
             cars
             deadweight
-            netTonnage
             hatchCount
             holdCount
             holdDimensions
