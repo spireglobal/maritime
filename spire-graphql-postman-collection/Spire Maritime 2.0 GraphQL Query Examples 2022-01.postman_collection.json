@@ -1,0 +1,939 @@
+{
+	"info": {
+		"_postman_id": "de9bc58b-69b3-4c23-a639-4076dc165cf6",
+		"name": "Spire Maritime 2.0 GraphQL Query Examples 2022-01",
+		"description": "This is a collection of API calls to the Spire Maritime, Maritime 2.0 graphQL API.\n\nDemonstrating the API call options, filter options and some examples of calling each.\n\nThere are 2 folders of Postman tests\n\n1.  Vessels GraphQL Query Examples. This demonstrates the different API options and filters\n2.  CONTAINERS Last Hour Page All Results. This demonstrates how to use the results pagination to loop through multiple pages of results until all requested data has been received. In this instance it requests all container ships with position updates in the previous hour.\n    \n\nNote: All tests are set to authenticate using a Spire Maritime API token stored in the postman environment in variable names spire_maritime_token.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Vessels GraphQL Query Examples",
+			"item": [
+				{
+					"name": "Vessels Query Filter List",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{spire_maritime_token}}",
+									"type": "string"
+								},
+								{
+									"key": "beta_token",
+									"value": "{{beta_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n  vessels( \n      # Sample query showing all filters that can be specified\n      # filters below must be set or deleted for the query to run\n        after: String\n        areaOfInterest: AreaOfInterest\n        callsign: [String!]\n        first: Int = 100\n        flag: [String!]\n        imo: [IMO!]\n        lastPositionUpdate: TimeRange\n        mmsi: [MMSI!]\n        name: [String!]\n        shipType: [ShipType!]\n    ) {\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n    totalCount{ relation value }\n    nodes {\n      id\n      updateTimestamp\n      staticData {\n        aisClass\n        flag\n        name\n        callsign\n        timestamp\n        updateTimestamp\n        shipType\n        shipSubType\n        mmsi\n        callsign\n        dimensions {\n          a\n          b\n          c\n          d\n          width\n          length\n        }\n      }\n      lastPositionUpdate {\n        accuracy\n        collectionType\n        course\n        heading\n        latitude\n        longitude\n        maneuver\n        navigationalStatus\n        rot\n        speed\n        timestamp\n        updateTimestamp\n      }\n      currentVoyage {\n        destination\n        draught\n        eta\n        matchedPort {\n          matchScore\n          port {\n            name\n            unlocode\n            centerPoint {\n              latitude\n              longitude\n            }\n          }\n        }\n        timestamp\n        updateTimestamp\n      }\n    }\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://api.spire.com/graphql",
+							"protocol": "https",
+							"host": [
+								"api",
+								"spire",
+								"com"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Returns all fields available in the Vessels V2 Beta Query \"Vessels\" for first 10 vessels with the shipType General Cargo and Container.\n\nArgument(s) used: shipType, first"
+					},
+					"response": []
+				},
+				{
+					"name": "All fields for a shipType",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{spire_maritime_token}}",
+									"type": "string"
+								},
+								{
+									"key": "beta_token",
+									"value": "{{beta_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n  vessels(\n      # valid values for shipType filter: \n      # shipType: [GENERAL_CARGO,DRY_BULK,CONTAINER,GAS_CARRIER,LIVESTOCK,LNG_CARRIER,REEFER,ROLL_ON_ROLL_OFF,TANKER_CHEMICALS,TANKER_CRUDE,TANKER_PRODUCT,CAR_CARRIER,COMBINATION_CARRIER]\n      shipType: [DRY_BULK,GENERAL_CARGO] # specify shipType as required\n        first: 1000  \n    ) {\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n    nodes {\n      id\n      updateTimestamp\n      staticData {\n        aisClass\n        flag\n        name\n        callsign\n        timestamp\n        updateTimestamp\n        shipType\n        shipSubType\n        mmsi\n        callsign\n        dimensions {\n          a\n          b\n          c\n          d\n          width\n          length\n        }\n      }\n      lastPositionUpdate {\n        accuracy\n        collectionType\n        course\n        heading\n        latitude\n        longitude\n        maneuver\n        navigationalStatus\n        rot\n        speed\n        timestamp\n        updateTimestamp\n      }\n      currentVoyage {\n        destination\n        draught\n        eta\n        matchedPort {\n          matchScore\n          port {\n            name\n            unlocode\n            centerPoint {\n              latitude\n              longitude\n            }\n          }\n        }\n        timestamp\n        updateTimestamp\n      }\n    }\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://api.spire.com/graphql",
+							"protocol": "https",
+							"host": [
+								"api",
+								"spire",
+								"com"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Returns all fields available in the Vessels V2 Beta Query \"Vessels\" for first 10 vessels with the shipType General Cargo and Container.\n\nArgument(s) used: shipType, first"
+					},
+					"response": []
+				},
+				{
+					"name": "PositionUpdate Last Hour LPG Tankers",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var d1 = new Date();\r",
+									"var d2 = new Date(d1);\r",
+									"d2.setTime(d2.getTime() - (1*60*60*1000));  // subtract 1 hour from the current time\r",
+									"startTimestamp = d2.toISOString(); \r",
+									"endTimestamp = d1.toISOString();\r",
+									"console.log(`Start Timestamp ISO Format: ${startTimestamp}`);\r",
+									"console.log(`End   Timestamp ISO Format: ${endTimestamp}`);\r",
+									"\r",
+									"pm.environment.set(\"startTime\", startTimestamp);\r",
+									"pm.environment.set(\"endTime\", endTimestamp);\r",
+									"// Set the shipType to be selected\r",
+									"pm.environment.set(\"shipType\", \"LNG_CARRIER\");\r",
+									"console.log(\"shipType filter set to : \"+pm.environment.get(\"shipType\"));\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{spire_maritime_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query{ \n    # query using startTime and endTime parameters for when vessels where updated and a shipType filter. values set in the Pre-Request Script.\n  vessels ( first: 1000 \n  lastPositionUpdate: { startTime: \"{{startTime}}\" endTime: \"{{endTime}}\" } \n  # shipType: [GENERAL_CARGO,DRY_BULK,CONTAINER,GAS_CARRIER,LIVESTOCK,LNG_CARRIER,REEFER,ROLL_ON_ROLL_OFF,TANKER_CHEMICALS,TANKER_CRUDE,TANKER_PRODUCT,CAR_CARRIER,COMBINATION_CARRIER]\n  # set the shipType filter using the value from the postman environment variable set in the pre-Request script\n  shipType: [{{shipType}}]\n  ) \n  { \n    totalCount { relation value }\n    pageInfo { hasNextPage endCursor } \n    nodes { \n      id updateTimestamp \n      staticData { aisClass callsign dimensions { a b c d width length } \n        flag imo mmsi name shipSubType shipType \n      } \n      lastPositionUpdate { accuracy collectionType course heading latitude longitude \n        maneuver navigationalStatus rot speed timestamp updateTimestamp \n      } \n      currentVoyage { destination draught eta \n        # matchedPort { matchScore port { centerPoint { latitude longitude } name unlocode } } \n        timestamp updateTimestamp \n      } \n    } \n  } \n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://api.spire.com/graphql",
+							"protocol": "https",
+							"host": [
+								"api",
+								"spire",
+								"com"
+							],
+							"path": [
+								"graphql"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						},
+						"description": "Returns all fields available in the Vessels V2 Beta Query \"Vessels\" for first 10 vessels with the shipType General Cargo and Container.\n\nArgument(s) used: shipType, first"
+					},
+					"response": []
+				},
+				{
+					"name": "All fields - Position Update in the last 1 hour",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var d1 = new Date();\r",
+									"var d2 = new Date(d1);\r",
+									"d2.setTime(d2.getTime() - (1*60*60*1000));  // subtract 1 hour from the current time\r",
+									"startTimestamp = d2.toISOString(); \r",
+									"endTimestamp = d1.toISOString();\r",
+									"console.log(`Start Timestamp ISO Format: ${startTimestamp}`);\r",
+									"console.log(`End   Timestamp ISO Format: ${endTimestamp}`);\r",
+									"\r",
+									"pm.environment.set(\"startTime\", startTimestamp);\r",
+									"pm.environment.set(\"endTime\", endTimestamp);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{spire_maritime_token}}",
+									"type": "string"
+								},
+								{
+									"key": "beta_token",
+									"value": "{{beta_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n  vessels(\n    lastPositionUpdate: {\n      # use startTime and endTime from postman environment, calculated in the Pre-request script\n      startTime: \"{{startTime}}\" \n      endTime: \"{{endTime}}\"\n    }\n    first: 1000\n  ) {\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n    totalCount{ relation value }\n    nodes {\n      staticData {\n        name\n        mmsi\n        imo\n      }\n      lastPositionUpdate {\n        timestamp\n        latitude\n        longitude\n        collectionType\n      }\n    }\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://api.spire.com/graphql",
+							"protocol": "https",
+							"host": [
+								"api",
+								"spire",
+								"com"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Returns data for some fields available in the Vessels V2 Beta Query \"Vessels\" for the first 100 vessels which last position was updated between the specified startTime and endTime.\n\nArgument(s) used: lastPositionUpdate, first"
+					},
+					"response": []
+				},
+				{
+					"name": "Pagination, next page using after",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{spire_maritime_token}}",
+									"type": "string"
+								},
+								{
+									"key": "beta_token",
+									"value": "{{beta_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n  vessels(\n      # use the endCursor value below from previous API request to get the next page of same results\n      after: \"insert-endCursor-string-here\", first: 100) {\n    pageInfo {\n      hasNextPage\n      endCursor\n    } \n    totalCount{ relation value }\n    nodes {\n      staticData {\n        name\n        mmsi\n        imo\n      }\n      lastPositionUpdate {\n        timestamp\n        latitude\n        longitude\n        collectionType\n      }\n    }\n  }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://api.spire.com/graphql",
+							"protocol": "https",
+							"host": [
+								"api",
+								"spire",
+								"com"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Returns data for some fields available in the Vessels V2 Beta Query \"Vessels\" for the first 100 vessels after the last request made to the service. \n\nArgument(s) used: after, first"
+					},
+					"response": []
+				},
+				{
+					"name": "Last positions in an AOI Polygon",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{spire_maritime_token}}",
+									"type": "string"
+								},
+								{
+									"key": "beta_token",
+									"value": "{{beta_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n  vessels(\n    areaOfInterest: {\n      polygon: { # Specify geoJson polygon coordinates to get vessels with last reported position in this polygon\n        type: \"Polygon\"\n        coordinates: [\n          [\n            [-122.662353515625, 37.54239958054064]\n            [-122.13226318359375, 37.54239958054064]\n            [-122.13226318359375, 37.8813571797486]\n            [-122.662353515625, 37.8813571797486]\n            [-122.662353515625, 37.54239958054064]\n          ]\n        ]\n      }\n    }\n  ) {\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n    totalCount{ relation value }\n    nodes {\n      id\n      updateTimestamp\n      staticData {\n        aisClass\n        flag\n        name\n        callsign\n        timestamp\n        updateTimestamp\n        shipType\n        shipSubType\n        mmsi\n        callsign\n        dimensions {\n          a\n          b\n          c\n          d\n          width\n          length\n        }\n      }\n      lastPositionUpdate {\n        accuracy\n        collectionType\n        course\n        heading\n        latitude\n        longitude\n        maneuver\n        navigationalStatus\n        rot\n        speed\n        timestamp\n        updateTimestamp\n      }\n      currentVoyage {\n        destination\n        draught\n        eta\n        matchedPort {\n          matchScore\n          port {\n            name\n            unlocode\n            centerPoint {\n              latitude\n              longitude\n            }\n          }\n        }\n        timestamp\n        updateTimestamp\n      }\n    }\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://api.spire.com/graphql",
+							"protocol": "https",
+							"host": [
+								"api",
+								"spire",
+								"com"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Returns data for all fields available in the Vessels V2 Beta Query \"Vessels\" for all vessels in a specified AOI.\n\nArgument(s) used: areaOfInterest"
+					},
+					"response": []
+				},
+				{
+					"name": "All fields for an MMSI List",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{spire_maritime_token}}",
+									"type": "string"
+								},
+								{
+									"key": "beta_token",
+									"value": "{{beta_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n  vessels(mmsi:[367455580,366962000,636020901,311000136,311027900,311027800,311038100,636019913,311000182,311000183,311000184,311000185,311000111,311000176,477131400,311000227,311000228,538005384,369142000,538005782,311000748,311000747,311000746,311000745,311000744,311000743,311000742,232006457,235112038,235033297,232011666,235089702,232004397,235004128,235000616,235076772,232005254,232011348,314419000,235007390,235097134,235052217,235035847,235020294,232003618,235104266,235087637,235097551,232011407,235078712,235076002,235005115,235083481,235012387,235090081,601715000,235110901,232006858,235093244,235118101,235075634,232002521,232003050,233486000,232027112,232022713,232026992,235077964,235054179,232018710,636018870,232035447,235089496,235000942,235102284,235087645,234002000,235089986,235084419,232006130,235110248,232013993,304111000,258118000,258193000,248730000,244074000,235089965,538007957,232004190,244020729,538004386,235000097,234900000,235060486,235097835,235002542,235088405,235087119,311000463]) {\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n    totalCount{ relation value }\n    nodes {\n      id\n      updateTimestamp\n      staticData {\n        aisClass\n        flag\n        name\n        callsign\n        timestamp\n        updateTimestamp\n        shipType\n        shipSubType\n        mmsi\n        callsign\n        dimensions {\n          a\n          b\n          c\n          d\n          width\n          length\n        }\n      }\n      lastPositionUpdate {\n        accuracy\n        collectionType\n        course\n        heading\n        latitude\n        longitude\n        maneuver\n        navigationalStatus\n        rot\n        speed\n        timestamp\n        updateTimestamp\n      }\n      currentVoyage {\n        destination\n        draught\n        eta\n        matchedPort {\n          matchScore\n          port {\n            name\n            unlocode\n            centerPoint {\n              latitude\n              longitude\n            }\n          }\n        }\n        timestamp\n        updateTimestamp\n      }\n    }\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://api.spire.com/graphql",
+							"protocol": "https",
+							"host": [
+								"api",
+								"spire",
+								"com"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Returns data for all fields available in the Vessels V2 Beta Query \"Vessels\" for all vessels globally. Filtered using an mmsi list of 100 vessels.\n\nArgument(s) used: mmsi"
+					},
+					"response": []
+				},
+				{
+					"name": "All fields for an IMO List",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{spire_maritime_token}}",
+									"type": "string"
+								},
+								{
+									"key": "beta_token",
+									"value": "{{beta_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n  vessels(imo:[9758428,9729269,9596272,9744922,9744934,9744910,9364966,9763813,9436422,9414137,9349564,9502726,9410909,9402249,9399923,9399935,9416434,9490686,9490698,9297577,9349552,9295206,9303807,9394234,9370824,9318474,9409546,9456783,9309021,9576741,9477866,9295579,9386483,9434450,9336775,9490662,9355252,9361251,9427940,9179854,9337030,9354454,9457294,9114775,9154323,9232163,9295127,9347152,9147461,9416044,9380350,9380594,9394765,9331000,9394753,9358436,9279812,9403205,9465368,9144718,9399193,9461257,9102291,9516222,9720964,9718454,9338084,9235816,9644835,9480954,9280873,9323895,9712462,9216406,9311866,9400954,9737060,9323390,9521203,9191723,9389813,9490636,9451484,9398981,9402110,9537276,9190107,9332195,9323510,9226633,9461087,9290775,9354648,9308417,9485021,9406180,9416707,9494486,9892494,9231573,9287340,9817523,9596492,9483231,9452854,9199828,9792917,9458468,9394222,9443164,9563938,9757785,9340362,9386433,9427952,9697430,9228057,9371907,9256377,9894818,9354533,9372858,9380075,9848510,9313280,9502738,9251846,9356438]) {\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n    totalCount{ relation value }\n    nodes {\n      id\n      updateTimestamp\n      staticData {\n        aisClass\n        flag\n        name\n        callsign\n        timestamp\n        updateTimestamp\n        shipType\n        shipSubType\n        mmsi\n        callsign\n        dimensions {\n          a\n          b\n          c\n          d\n          width\n          length\n        }\n      }\n      lastPositionUpdate {\n        accuracy\n        collectionType\n        course\n        heading\n        latitude\n        longitude\n        maneuver\n        navigationalStatus\n        rot\n        speed\n        timestamp\n        updateTimestamp\n      }\n      currentVoyage {\n        destination\n        draught\n        eta\n        matchedPort {\n          matchScore\n          port {\n            name\n            unlocode\n            centerPoint {\n              latitude\n              longitude\n            }\n          }\n        }\n        timestamp\n        updateTimestamp\n      }\n    }\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://api.spire.com/graphql",
+							"protocol": "https",
+							"host": [
+								"api",
+								"spire",
+								"com"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Returns all fields available in the Vessels V2 Beta Query \"Vessels\" for all vessels globally. No arguments are applied to filter the output data."
+					},
+					"response": []
+				},
+				{
+					"name": "All fields - Vessel Characteristics Basic",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{spire_maritime_token}}",
+									"type": "string"
+								},
+								{
+									"key": "beta_token",
+									"value": "{{beta_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query chars {\n  vessels(\n    first:100,\n    shipType: [CONTAINER, DRY_BULK, GENERAL_TANKER, TANKER_CRUDE]\n    ) \n  {\n    pageInfo { hasNextPage endCursor }  totalCount { value  relation }\n    nodes { \n      id\n       staticData { imo mmsi \n        aisClass\n        flag\n        name\n        callsign\n        timestamp\n        updateTimestamp\n        shipType\n        shipSubType\n        mmsi\n        callsign\n        dimensions {\n          a\n          b\n          c\n          d\n          width\n          length\n        }\n      }\n       lastPositionUpdate {\n        accuracy\n        collectionType\n        course\n        heading\n        latitude\n        longitude\n        maneuver\n        navigationalStatus\n        rot\n        speed\n        timestamp\n        updateTimestamp\n      }\n      currentVoyage {\n        destination\n        draught\n        eta\n        timestamp\n        updateTimestamp\n      }\n      characteristics {\n        basic {\n          capacity {\n            deadweight\n            # grossTonnage # gross_tonnage available here 2022-01-26\n          }\n          history { builtYear }\n          vesselTypeAndTrading { vesselSubtype  }\n        }\n      }\n    }\n  }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://api.spire.com/graphql",
+							"protocol": "https",
+							"host": [
+								"api",
+								"spire",
+								"com"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Returns all fields available in the Vessels V2 Beta Query \"Vessels\" for all vessels globally. No arguments are applied to filter the output data."
+					},
+					"response": []
+				},
+				{
+					"name": "All fields + Vessel Characteristics Extended",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{spire_maritime_token}}",
+									"type": "string"
+								},
+								{
+									"key": "beta_token",
+									"value": "{{beta_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query chars {\n  vessels(\n    first:100,\n    shipType: [CONTAINER, DRY_BULK, GENERAL_TANKER, TANKER_CRUDE]\n    ) \n  {\n    pageInfo { hasNextPage endCursor }  totalCount { value  relation }\n    nodes { \n      id\n       staticData { imo mmsi \n        aisClass\n        flag\n        name\n        callsign\n        timestamp\n        updateTimestamp\n        shipType\n        shipSubType\n        mmsi\n        callsign\n        dimensions {\n          a\n          b\n          c\n          d\n          width\n          length\n        }\n      }\n       lastPositionUpdate {\n        accuracy\n        collectionType\n        course\n        heading\n        latitude\n        longitude\n        maneuver\n        navigationalStatus\n        rot\n        speed\n        timestamp\n        updateTimestamp\n      }\n      currentVoyage {\n        destination\n        draught\n        eta\n        timestamp\n        updateTimestamp\n      }\n      characteristics {\n        extended {\n          capacity {\n            deadweight\n            tpcmi\n            netTonnage\n            grossTonnage\n            displacement\n            liquidCubic98Percent\n            grainCubicCapacity\n            teu\n            holdCount\n            holdDimensions\n            hatchCount\n            hatchDimensions\n            feu\n            teuSurplus\n            teu14t\n            laneMeters\n            cars\n            passengers\n            reeferCubic\n          }\n          design {\n            isCoated\n            isGearless\n            isSelfUnloading\n            gearDisplay\n            gearMaxSwl\n            reeferPointCount\n            hullTypeCode\n          }\n          dimensions {\n            draught\n            lengthOverall\n            airDraught\n            keelToManifold\n            depth\n            beamMoulded\n            berthCount\n          }\n          history {\n            vesselNameDate\n            builtYear\n            deadYear\n            shipBuilder\n            hullNumber\n            registeredOwner\n            keelLaidYear\n            launchYear\n            # commercialOwner # commercial owner available here 2022-01-26\n          }\n          propulsion {\n            mainEngineCount\n            mainEngineDesigner\n            propulsionType\n            engineDesignation\n            mcoRpm\n            mcoKw\n            mcoHp\n            propellerCount\n            propellerType\n            bowThrusterCount\n            sternThrusterCount\n          }\n          registration {\n            class1Code\n            class2Code\n            classDetails\n            isIceClassed\n            iceClass\n            # lastSpecialSurvey\n            # lastDryDock\n            certificates\n          }\n          vesselTypeAndTrading {\n            vesselSubtype\n            tradingCategoryCode\n            tradingStatusCode\n          }\n          bunker {\n            bunkers {\n              capacity\n              fuelTypeCode\n              fuelUnitCode\n              tankCount\n            }\n            range\n          }\n        }\n      }\n    }\n  }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://api.spire.com/graphql",
+							"protocol": "https",
+							"host": [
+								"api",
+								"spire",
+								"com"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Returns all fields available in the Vessels V2 Beta Query \"Vessels\" for all vessels globally. No arguments are applied to filter the output data."
+					},
+					"response": []
+				},
+				{
+					"name": "Port Query by locode",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{spire_maritime_token}}",
+									"type": "string"
+								},
+								{
+									"key": "beta_token",
+									"value": "{{beta_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query { port(unlocode: \"DEHAM\")\n  { \n    centerPoint{ longitude latitude }\n    name\n    unlocode\n } } ",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://api.spire.com/graphql",
+							"protocol": "https",
+							"host": [
+								"api",
+								"spire",
+								"com"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Returns all fields available in the Vessels V2 Beta Query \"Vessels\" for all vessels globally. No arguments are applied to filter the output data."
+					},
+					"response": []
+				},
+				{
+					"name": "Port Matching",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{spire_maritime_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query{matchedPort(text:\"JEDDAH S ARABIA\") { \n  matchScore\n  port {\n    name\n    unlocode \n    centerPoint{ longitude latitude }\n  }\n}}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://api.spire.com/graphql",
+							"protocol": "https",
+							"host": [
+								"api",
+								"spire",
+								"com"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Returns all fields available in the Vessels V2 Beta Query \"Vessels\" for first 10 vessels with the shipType General Cargo and Container.\n\nArgument(s) used: shipType, first"
+					},
+					"response": []
+				}
+			],
+			"description": "This folder contains sample queries to use with the Vessels V2 Beta API.\n\nNote: All tests are set to authenticate using a Spire Maritime API token stored in the postman environment in variable named spire_maritime_token.",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "CONTAINERS Last Hour Page All Results",
+			"item": [
+				{
+					"name": "FirstPage Last Hour CONTAINERS",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Update the count of API pages of results received\r",
+									"let pageCount = pm.environment.get(\"pageCount\");\r",
+									"pageCount += 1;\r",
+									"pm.environment.set(\"pageCount\",pageCount);\r",
+									"console.log(\"API Results Page: \"+pageCount)\r",
+									"\r",
+									"pm.test(\"check has NextPage\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.data.vessels.pageInfo.hasNextPage).to.eql(true); \r",
+									"    endCursor = jsonData.data.vessels.pageInfo.endCursor; \r",
+									"    pm.environment.set(\"lastEndCursorValue\",endCursor);\r",
+									"    console.log(\"set endCursor value: \"+endCursor); \r",
+									"    if ( typeof(endCursor) === \"string\" ) { postman.setNextRequest(\"NextPage Last Hour CONTAINERS\");  }\r",
+									"    else { postman.setNextRequest(\"\");} // Last page received, do not set next request\r",
+									"});\r",
+									"\r",
+									"minResultsExpected=pm.environment.get(\"minResultsExpected\");\r",
+									"pm.test(\"check has totalCount value >= \"+minResultsExpected, function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.data.vessels.totalCount.value).to.above(100);\r",
+									"});\r",
+									"\r",
+									"/* Loop through the nodes returned and check all have the correct shipType value */\r",
+									"var jsonData = pm.response.json();\r",
+									"let i = 0; \r",
+									"let totalCount = jsonData.data.vessels.totalCount.value // note this is the total results count not the count of records in this page of results\r",
+									"\r",
+									"// need to count nodes in results and loop throough them only, stopping when no further nodes\r",
+									"let shipType = pm.environment.get(\"shipType\");\r",
+									"let testName = \"check all shipType values are \"+shipType; \r",
+									"pm.test(testName, function () {\r",
+									"  var jsonData = pm.response.json();\r",
+									"  var shipType = pm.environment.get(\"shipType\"); // \"{{shipType}}\"\r",
+									"  var nodeCount = jsonData.data.vessels.nodes.length;\r",
+									"  let matchingShipType = 0;\r",
+									"  console.log(\"Array count = \"+ nodeCount+\". Checking that all shipType values are \" +shipType);\r",
+									"  while (i < nodeCount) {  \r",
+									"    if ( jsonData.data.vessels.nodes[i].staticData.shipType === shipType ){ matchingShipType += 1 }\r",
+									"    i++;\r",
+									"}\r",
+									"  console.log(\"NodeCount: \"+nodeCount+\" count with shipType = \" + shipType + \" count: \" +matchingShipType)\r",
+									"  pm.expect(matchingShipType).to.eql(nodeCount);\r",
+									"});\r",
+									"\r",
+									"// build an array of the imo numbers returned in the JSON response\r",
+									"let v2_imo_list = []; let imo_count = 0;\r",
+									"var nodeCount = jsonData.data.vessels.nodes.length;\r",
+									"i = 0; \r",
+									"while (i < nodeCount ) {        \r",
+									"    if ( jsonData.data.vessels.nodes[i].staticData.imo > 0  ){ v2_imo_list[i] = jsonData.data.vessels.nodes[i].staticData.imo ; imo_count++; }\r",
+									"    i++;\r",
+									"}\r",
+									"pm.environment.set(\"v2_imo_list\", v2_imo_list );\r",
+									"// console.log(\"V2 API Results. IMO List: \"+v2_imo_list);\r",
+									"pm.environment.set(\"v2_imo_count\", imo_count );\r",
+									"console.log(\"V2 API Results. IMO Count Received is now: \"+imo_count);\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var d1 = new Date();\r",
+									"var d2 = new Date(d1);\r",
+									"d2.setTime(d2.getTime() - (1*60*60*1000));  // subtract 1 hour from the current time\r",
+									"startTimestamp = d2.toISOString(); \r",
+									"endTimestamp = d1.toISOString();\r",
+									"\r",
+									"console.log(`Start Timestamp ISO Format: ${startTimestamp}`);\r",
+									"console.log(`End   Timestamp ISO Format: ${endTimestamp}`);\r",
+									"\r",
+									"pm.environment.set(\"startTime\", startTimestamp);\r",
+									"pm.environment.set(\"endTime\", endTimestamp);\r",
+									"pm.environment.set(\"scriptStartTime\", endTimestamp);\r",
+									"\r",
+									"pm.environment.set(\"lastEndCursorValue\",\"\"); // endCursor value stored from first page of results if multi pages are to be returned\r",
+									"pm.environment.set(\"pageCount\", 0); // set environment variable to keep track of pages of results returned\r",
+									"pm.environment.set(\"v2_imo_list\", \"\" ); // set environment variable to keep list of IMO numbers returned\r",
+									"pm.environment.set(\"v2_imo_count\", 0 ); // set environment variable to keep count of IMO numbers returned\r",
+									"\r",
+									"// Set the shipType to be selected\r",
+									"pm.environment.set(\"shipType\", \"CONTAINER\"); \r",
+									"pm.environment.set(\"minResultsExpected\", 5000);\r",
+									"pm.environment.set(\"firstValue\",1000);\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{spire_maritime_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query{ \n  vessels ( first: {{firstValue}} \n  lastPositionUpdate: { startTime: \"{{startTime}}\" endTime: \"{{endTime}}\" } \n  # shipType: [GENERAL_CARGO,DRY_BULK,CONTAINER,GAS_CARRIER,LIVESTOCK,LNG_CARRIER,REEFER,ROLL_ON_ROLL_OFF,TANKER_CHEMICALS,TANKER_CRUDE,TANKER_PRODUCT,CAR_CARRIER,COMBINATION_CARRIER]\n  shipType: [{{shipType}}]\n  ) \n  { \n    totalCount { relation value }\n    pageInfo { hasNextPage endCursor } \n    nodes { \n      id updateTimestamp \n      staticData { aisClass callsign dimensions { a b c d width length } \n        flag imo mmsi name shipSubType shipType \n      } \n      lastPositionUpdate { accuracy collectionType course heading latitude longitude \n        maneuver navigationalStatus rot speed timestamp updateTimestamp \n      } \n      currentVoyage { destination draught eta \n        # matchedPort { matchScore port { centerPoint { latitude longitude } name unlocode } } \n        timestamp updateTimestamp \n      } \n    } \n  } \n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://api.spire.com/graphql",
+							"protocol": "https",
+							"host": [
+								"api",
+								"spire",
+								"com"
+							],
+							"path": [
+								"graphql"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						},
+						"description": "Returns all fields available in the Vessels V2 Beta Query \"Vessels\" for first 10 vessels with the shipType General Cargo and Container.\n\nArgument(s) used: shipType, first"
+					},
+					"response": []
+				},
+				{
+					"name": "NextPage Last Hour CONTAINERS",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Update the count of API pages of results received\r",
+									"let pageCount = pm.environment.get(\"pageCount\");\r",
+									"pageCount += 1;\r",
+									"pm.environment.set(\"pageCount\",pageCount);\r",
+									"console.log(\"API Results Page: \"+pageCount)\r",
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"endCursor = jsonData.data.vessels.pageInfo.endCursor; \r",
+									"pm.environment.set(\"lastEndCursorValue\",endCursor);\r",
+									"console.log(\"set endCursor value: \"+endCursor); \r",
+									"if ( typeof(endCursor) === \"string\" ) { \r",
+									"     postman.setNextRequest(\"NextPage Last Hour CONTAINERS\");  \r",
+									"     pm.environment.set(\"hasNextPage\",true);\r",
+									"    }\r",
+									"else { \r",
+									"    // Last page received, set next request empty so tests do not loop\r",
+									"    postman.setNextRequest(\"\");  \r",
+									"    pm.environment.set(\"hasNextPage\",false);\r",
+									"    }\r",
+									"\r",
+									"/* Loop through the nodes returned and check all have the correct shipType value */\r",
+									"let i = 0; \r",
+									"let totalCount = jsonData.data.vessels.totalCount.value // note this is the total results count not the count of records in this page of results\r",
+									"\r",
+									"// need to count nodes in results and loop throough them only, stopping when no further nodes\r",
+									"let shipType = pm.environment.get(\"shipType\");\r",
+									"let testName = \"check all shipType values are \"+shipType; \r",
+									"var nodeCount = jsonData.data.vessels.nodes.length;\r",
+									"let matchingShipType = 0;\r",
+									"console.log(\"Array count = \"+ nodeCount+\". Checking that all shipType values are \" +shipType);\r",
+									"while (i < nodeCount) {        \r",
+									"    if ( jsonData.data.vessels.nodes[i].staticData.shipType === shipType ){ matchingShipType += 1 }\r",
+									"    i++;\r",
+									"}\r",
+									"console.log(\"NodeCount: \"+nodeCount+\" count with shipType = \" + shipType + \" count: \" +matchingShipType)\r",
+									"  pm.expect(matchingShipType).to.eql(nodeCount);\r",
+									"\r",
+									"// build an array of the imo numbers returned in the JSON response\r",
+									"let v2_imo_list = [ pm.environment.get(\"v2_imo_list\") ];\r",
+									"let imo_count = pm.environment.get(\"v2_imo_count\");\r",
+									"i = 0; \r",
+									"while (i < nodeCount ) {        \r",
+									"    if ( jsonData.data.vessels.nodes[i].staticData.imo > 0  ){ \r",
+									"        v2_imo_list.push( jsonData.data.vessels.nodes[i].staticData.imo );\r",
+									"        imo_count ++;\r",
+									"        }\r",
+									"    i++;\r",
+									"}\r",
+									"pm.environment.set(\"v2_imo_list\", v2_imo_list );\r",
+									"pm.environment.set(\"v2_imo_count\", imo_count );\r",
+									"console.log(\"V2 API Results. IMO Count Received is now: \"+imo_count);\r",
+									"\r",
+									"// Check if last page of results / last API call to be made\r",
+									"if( jsonData.data.vessels.pageInfo.hasNextPage === false ){ \r",
+									"    var d1 = new Date();\r",
+									"    endTimestamp= d1.toISOString(); \r",
+									"    startTimestamp = pm.environment.get(\"endTime\");\r",
+									"    console.log(\"API Results. IMO List Received: \"+v2_imo_list);\r",
+									"    console.log(`API calls started at: ${startTimestamp}`);\r",
+									"    console.log(`API calls ended at  : ${endTimestamp}`);\r",
+									"    console.log(`API calls made      : ${pageCount}`);\r",
+									" };\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// no pre-request script as this is the repeating API request for additional pages of results"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{spire_maritime_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query{ \n  vessels ( first: {{firstValue}} \n  lastPositionUpdate: { startTime: \"{{startTime}}\" endTime: \"{{endTime}}\" } \n  # shipType: [GENERAL_CARGO,DRY_BULK,CONTAINER,GAS_CARRIER,LIVESTOCK,LNG_CARRIER,REEFER,ROLL_ON_ROLL_OFF,TANKER_CHEMICALS,TANKER_CRUDE,TANKER_PRODUCT,CAR_CARRIER,COMBINATION_CARRIER]\n  shipType: [{{shipType}}]\n  after: \"{{lastEndCursorValue}}\"\n  ) \n  { \n    totalCount { relation value }\n    pageInfo { hasNextPage endCursor } \n    nodes { \n      id updateTimestamp \n      staticData { aisClass callsign dimensions { a b c d width length } \n        flag imo mmsi name shipSubType shipType \n      } \n      lastPositionUpdate { accuracy collectionType course heading latitude longitude \n        maneuver navigationalStatus rot speed timestamp updateTimestamp \n      } \n      currentVoyage { destination draught eta \n        # matchedPort { matchScore port { centerPoint { latitude longitude } name unlocode } } \n        timestamp updateTimestamp \n      } \n    } \n  } \n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://api.spire.com/graphql",
+							"protocol": "https",
+							"host": [
+								"api",
+								"spire",
+								"com"
+							],
+							"path": [
+								"graphql"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						},
+						"description": "Returns all fields available in the Vessels V2 Beta Query \"Vessels\" for first 10 vessels with the shipType General Cargo and Container.\n\nArgument(s) used: shipType, first"
+					},
+					"response": []
+				}
+			],
+			"description": "This folder demonstrates how to use Maritime 2.0 to query the latest position for all container ships updated in the previous hour.\n\nTest First Page runs once and sets the startTime and endTime parameters plus the shipType value to be used in the pre-Request script.\n\nfor the 2nd and subsequent pages of results NextPage is used and this repeats until hasNextPage is no longer true indicating that the final set of results have been received.\n\nNote: All tests are set to authenticate using a Spire Maritime API token stored in the postman environment in a variable named spire_maritime_token.",
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{spire_maritime_token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "beta_token",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
