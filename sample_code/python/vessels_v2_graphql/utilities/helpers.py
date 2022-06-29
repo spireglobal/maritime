@@ -5,6 +5,8 @@ from nested_lookup import nested_lookup as nl
 from gql import Client
 from gql.transport.requests import RequestsHTTPTransport
 from requests import exceptions
+from collections.abc import MutableMapping
+
 
 def get_gql_client(settings):
     """ Establishes a gql client
@@ -259,4 +261,47 @@ def pretty_string_dict(dictionary, with_empties=True):
     return result
 
 
+def flatten(dictionary, parent_key=False, separator='.'):
+    """
+    Turn a nested dictionary into a flattened dictionary
+    :param dictionary: The dictionary to flatten
+    :param parent_key: The string to prepend to dictionary's keys
+    :param separator: The string used to separate flattened keys
+    :return: A flattened dictionary
+    """
+    crumbs = True
+    items = []
+    for key, value in dictionary.items():
+        if crumbs: #print('checking:',key)
+            new_key = str(parent_key) + separator + key if parent_key else key
+            if isinstance(value, MutableMapping):
+                if crumbs: #print(new_key,': dict found')
+                    if not value.items():
+                        if crumbs: #print('Adding key-value pair:',new_key,None)
+                            items.append((new_key,None))
+                    else:
+                        items.extend(flatten(value, new_key, separator).items())
+            elif isinstance(value, list):
+                if crumbs: #print(new_key,': list found')
+                    if len(value):
+                        for k, v in enumerate(value):
+                            items.extend(flatten({str(k): v}, new_key).items())
+                    else:
+                        if crumbs: #print('Adding key-value pair:',new_key,None)
+                            items.append((new_key,None))
+            else:
+                if crumbs: #print('Adding key-value pair:',new_key,value)
+                    items.append((new_key, value))
+    return dict(items)
 
+def get_all_keys(dictionary):
+    """
+    Get all keys of non-null values from a dictionary
+    :param dictionary: The dictionary
+    :return: An array of keys
+    """
+    keys = []
+    for k,v in dictionary.items():
+        if v:
+            keys.append(k)
+    return keys

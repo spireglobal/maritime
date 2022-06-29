@@ -1,5 +1,5 @@
-query {
-  vessels {
+query { 
+  vessels (first:1000) {
     pageInfo {
       hasNextPage
       endCursor

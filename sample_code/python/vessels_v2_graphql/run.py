@@ -1,11 +1,13 @@
+from operator import index
 import yaml
 import json
-import csv
+import datetime
 from loguru import logger
 from utilities import paging, helpers
 from gql import gql
-from nested_lookup import get_all_keys, nested_lookup
-from flatten_dict import flatten
+from nested_lookup import nested_lookup
+import pandas as pd
+import time
 
 
 logger.add('demo_client.log', rotation="500 MB", retention="10 days", level='DEBUG')
@@ -39,31 +41,26 @@ def write_raw(data: dict):
     with open(name_of_raw_output_file, 'a+') as f:
         f.write(json.dumps(data, indent=4))
 
-
-def write_csv(data: dict):
-    global rows_written_to_csv, wrote_csv_header
-    settings = get_settings()
-    name_of_csv_file = settings['name_of_csv_file']
-    if not name_of_csv_file:
-        return
-    # get dict nodes
+def loadDataframe(data: dict):
+    """Converts response from API call as dict to pandas dataframe ensuring all columns are listed
+    :returns df: dataframe with rows from processed data
+    :rtype df: pd.DataFrame
+    """
+     # get dict nodes
     nodes: list = nested_lookup('nodes', data)
+    df = pd.DataFrame()
     for node_list in nodes:
         for node in node_list:
-            flat: dict = flatten(node, reducer='dot')
-            csv_columns = get_all_keys(flat)
-            try:
-                with open(name_of_csv_file, 'a+') as f:
-                    writer = csv.DictWriter(f, fieldnames=csv_columns)
-                    # logger.debug(f"WROTE HEADER: {wrote_csv_header}")
-                    if not wrote_csv_header:
-                        writer.writeheader()
-                        wrote_csv_header = True
-                    writer.writerow(flat)
-            except Exception:
-                raise
 
-
+            flat: dict = helpers.flatten(node)            
+            # BUG FOR FIELDS PARENTS WITH EMPTY VALUES (EX: Characteristics : Null). TEST WITH VARIOUS QUERIES
+            csv_columns = helpers.get_all_keys(flat)
+            df_node = pd.DataFrame(flat, columns=csv_columns, index=[0])
+            if len(df) > 0:
+                df = pd.concat([df, df_node], axis=0, ignore_index=True)
+            else:
+                df = df_node
+    return df
 
 def get_info():
     info: str = ''
@@ -75,6 +72,8 @@ def run():
     global pages_processed, rows_written_to_raw_log
     settings = get_settings()
     pages_to_process = settings['pages_to_process']
+    name_of_csv_file = settings['name_of_csv_file']
+
     # make a client connection
     client = helpers.get_gql_client(settings=settings)
 
@@ -92,28 +91,30 @@ def run():
     if response:
         # initialize paging
         pg = paging.Paging(response=response)
-        schema_members = helpers.get_vessels_v2_members()
+        # schema_members = helpers.get_vessels_v2_members()
 
         # page, write, util complete
         logger.info("Paging started")
         hasNextPage: bool = False
+        df_output = pd.DataFrame()
+        df_output = pd.concat([df_output,loadDataframe(response)], axis=0, ignore_index=True)
         while True:
             response, hasNextPage = pg.page_and_get_response(client, query)
             if response:
                 write_raw(response)
-                write_csv(response)
                 pages_processed += 1
-                #     logger.info(f"Page: {pages_processed}")
                 logger.info(get_info())
-                if pages_to_process == 1:
-                    break
-                elif pages_to_process:
-                    if not hasNextPage or not response:
+                if name_of_csv_file:
+                    df_output = pd.concat([df_output,loadDataframe(response)], axis=0, ignore_index=True)
+
+                    if not hasNextPage:
+                        if name_of_csv_file:
+                            df_output.to_csv(name_of_csv_file, index= False)
                         break
-                    if pages_processed >= pages_to_process:
+                    elif pages_to_process and pages_processed >= pages_to_process:
+                        if name_of_csv_file:
+                            df_output.to_csv(name_of_csv_file, index= False)
                         break
-                elif not hasNextPage or not response:
-                    break
             else:
                 logger.info(
                     "Did not get data for csv, either because there are no more pages, or did not get a response")
@@ -124,5 +125,9 @@ def run():
 
 
 if __name__ == '__main__':
+    start = time.time()
     run()
+    end = time.time()
+    time_elapsed = datetime.timedelta(seconds=(end - start))
+    logger.info(f"Time elapsed: {time_elapsed}")
     logger.info("Done")

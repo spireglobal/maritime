@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 from loguru import logger
 from gql import gql
 from utilities import helpers
@@ -25,12 +26,10 @@ class Paging(object):
         return endCursor, hasNextPage
 
     def _should_stop_paging(self):
-        # pageInfo.hasNextPage: false and pageInfo.endCursor: null
         endCursor, hasNextPage = self.get_pageInfo_elements()
-        #logger.debug(f"Stop paging?  hasNextPage: {hasNextPage}, endCursor: {endCursor}")
-        if endCursor or not hasNextPage:
+        if endCursor and hasNextPage:
             return False
-        elif hasNextPage and endCursor:
+        elif not hasNextPage or endCursor is NULL:
             return True
 
     def get_response(self):
@@ -41,7 +40,7 @@ class Paging(object):
         Args:
             client: gql client
             query: str query string
-            hasNextPage: bool optional - paging element, is there a next page
+            hasNextPage: bool optional - paging element, is there a next page -- NOT HERE
 
         Returns:
             response: dict service response to query
@@ -49,6 +48,7 @@ class Paging(object):
         """
         if not self._response:
             try:
+                # print(query)
                 self._response = client.execute(gql(query))
             except BaseException as e:
                 logger.error(e)
@@ -61,16 +61,22 @@ class Paging(object):
             # there is more, so page
             endCursor, hasNextPage = self.get_pageInfo_elements()
             if endCursor:
-                insert_text = f'after: "{endCursor}" '
+                insert_text = f',after: "{endCursor}" '
             else:
+                logger.info(f'Error no endCursor {endCursor}')
                 hasNextPage = False
                 return self._response, hasNextPage
             query = helpers.insert_into_query_header(query=query, insert_text=insert_text)
             try:
+                # print(query)
                 self._response = client.execute(gql(query))
             except BaseException as e:
-                # logger.warning(e)  do not really need this
-                self._response = False
+                logger.warning(e)
+                try: # Try again as there could be internal errors from time to time
+                    # print(query)
+                    self._response = client.execute(gql(query))
+                except BaseException as e:
+                    self._response = False
 
             return self._response, hasNextPage
 
