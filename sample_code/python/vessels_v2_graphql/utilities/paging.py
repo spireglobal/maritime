@@ -1,4 +1,3 @@
-from asyncio.windows_events import NULL
 from loguru import logger
 from gql import gql
 from utilities import helpers
