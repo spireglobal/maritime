@@ -17,7 +17,7 @@ In order to utilize this repo you will need two things:
 
 ![Import](https://github.com/kjbrazil/spire-api-postman-collection/blob/master/images/import.png?raw=true)
 
-6. Drag or find both the ``Spire_GraphQL_Postman_Collection.postman_collection.json`` & ``Spire.postman_environment.json`` files and click open.
+6. Drag or find both the ``Spire Maritime 2.0 GraphQL Query Examples 2023-02.postman_collection`` & ``Spire.postman_environment.json`` files and click open.
 
 ![Drop Files](https://github.com/kjbrazil/spire-api-postman-collection/blob/master/images/drop_files.png?raw=true)
 
