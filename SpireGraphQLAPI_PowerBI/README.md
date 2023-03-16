@@ -1,5 +1,3 @@
-README FILE
-
 The file in this folder is a Custom Power BI Connector that allows you to easily access some standard queries for Spire GraphQL API (Vessels 2.0, Vessels 2.0 with Vessel to Port ETA, Port Events API) without having to code anything. 
 
 In order to try the connector on Power BI, you would need the following:
@@ -39,3 +37,5 @@ Create your report or dashboard using the transformed data.
 
 Conclusion:
 The SpireGraphQL_PowerBI Connector provides an easy way to connect to the Spire GraphQL API and retrieve AIS data from the Vessels 2.0 and Port Events API services. By following this step-by-step tutorial, you can install and use the SpireGraphQL_PowerBI Connector to access this valuable data and create insightful reports and dashboards in Power BI.
+
+NB: This connector is currently in Beta version and is not fully supported by Spire Maritime.
